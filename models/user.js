@@ -60,7 +60,7 @@ const Admin = mongoose.model('Admin', AdminSchema);
 const AppointmentSchema = new Schema({
     userID: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     doctor: { type: String, required: true },
-    speciality: { type: String, required: true },
+    specialization: { type: String, required: true },
     date: { type: String, required: true },
     time: { type: String, required: true },
     status: { type: String, enum: ['Pending', 'Confirmed', 'Completed', 'Cancelled'], default: 'Pending' }

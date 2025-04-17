@@ -328,11 +328,11 @@ app.post('/appointments', async (req, res) => {
         } else {
             // Create new appointment
             console.log('New appointment data:', req.body);
-            const { doctor, speciality, date, time } = req.body;
+            const { doctor, specialization, date, time } = req.body;
             appointment = new Appointment({
                 userID: userId,
                 doctor,
-                speciality,
+                specialization,
                 date,
                 time
             });
@@ -364,10 +364,16 @@ app.get('/appointments', async (req, res) => {
 
         // Then find appointments using userID (not patient or user)
         const appointments = await Appointment.find({ userID: userId });
+        const doctors = await Doctor.find(); // Fetch all doctors
+
+        // Extract unique specialities
+        const specialities = [...new Set(doctors.map(doc => doc.specialization))];
 
         res.render('Appointments', {
             user: patient,
-            appointments: appointments
+            doctors,
+            specialities,
+            appointments
         });
     } catch (err) {
         console.error('Error fetching appointments:', err);

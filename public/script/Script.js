@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Get appointment data from data attributes
             const id = this.getAttribute('data-id');
             const doctor = this.getAttribute('data-doctor');
-            const speciality = this.getAttribute('data-speciality');
+            const specialization = this.getAttribute('data-specialization');
             const date = new Date(this.getAttribute('data-date'));
             const time = this.getAttribute('data-time');
 
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Set values in the modal form
             document.getElementById('appointmentId').value = id;
             document.getElementById('rescheduleDoctor').value = doctor;
-            document.getElementById('rescheduleSpeciality').value = speciality;
+            document.getElementById('reschedulespecialization').value = specialization;
             document.getElementById('rescheduleDate').value = formattedDate;
 
             // Set the time if it matches one of the options
@@ -168,3 +168,114 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    // Check if both elements exist before proceeding
+    const doctorDataElement = document.getElementById('doctor-data');
+    const specializationSelect = document.getElementById('specialization');
+    const doctorSelect = document.getElementById('doctor');
+    const dateField = document.getElementById('date');
+
+    if (!doctorDataElement || !specializationSelect || !doctorSelect) {
+        console.error('Required DOM elements not found');
+        return;
+    }
+
+    try {
+        const doctorData = JSON.parse(doctorDataElement.textContent);
+        console.log('Doctor data loaded:', doctorData);
+
+        // Set min date for appointment date field
+        if (dateField) {
+            const today = new Date().toISOString().split('T')[0];
+            dateField.min = today;
+        }
+
+        // Keep track of whether we're currently updating from another dropdown
+        // to prevent infinite loops
+        let isUpdatingFromOtherDropdown = false;
+
+        // Function to populate all doctors
+        function populateAllDoctors() {
+            doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
+
+            doctorData.forEach(doc => {
+                const option = document.createElement('option');
+                option.value = doc.name;
+                option.textContent = doc.name;
+                doctorSelect.appendChild(option);
+            });
+        }
+
+        // Function to filter doctors by specialization
+        function filterDoctorsBySpecialization(specialization) {
+            if (isUpdatingFromOtherDropdown) return;
+
+            isUpdatingFromOtherDropdown = true;
+
+            // If no specialization is selected, show all doctors
+            if (!specialization) {
+                populateAllDoctors();
+                isUpdatingFromOtherDropdown = false;
+                return;
+            }
+
+            // Clear current options
+            doctorSelect.innerHTML = '<option value="">Select Doctor</option>';
+
+            console.log('Filtering doctors for specialization:', specialization);
+            const matchingDoctors = doctorData.filter(doc => doc.specialization === specialization);
+            console.log('Matching doctors:', matchingDoctors);
+
+            matchingDoctors.forEach(doc => {
+                const option = document.createElement('option');
+                option.value = doc.name;
+                option.textContent = doc.name;
+                doctorSelect.appendChild(option);
+            });
+
+            isUpdatingFromOtherDropdown = false;
+        }
+
+        // Function to set specialization based on selected doctor
+        function setSpecializationFromDoctor(doctorName) {
+            if (isUpdatingFromOtherDropdown) return;
+
+            isUpdatingFromOtherDropdown = true;
+
+            if (!doctorName) {
+                // If no doctor is selected, don't change specialization
+                isUpdatingFromOtherDropdown = false;
+                return;
+            }
+
+            console.log('Finding specialization for doctor:', doctorName);
+            const doctor = doctorData.find(doc => doc.name === doctorName);
+            if (doctor) {
+                console.log('Found doctor:', doctor);
+                specializationSelect.value = doctor.specialization;
+            }
+
+            isUpdatingFromOtherDropdown = false;
+        }
+
+        // Initialize doctor dropdown with all doctors
+        populateAllDoctors();
+
+        // Add event listener for specialization change
+        specializationSelect.addEventListener('change', function () {
+            const selectedSpecialization = this.value;
+            console.log('Specialization changed to:', selectedSpecialization);
+            filterDoctorsBySpecialization(selectedSpecialization);
+        });
+
+        // Add event listener for doctor change
+        doctorSelect.addEventListener('change', function () {
+            const selectedDoctor = this.value;
+            console.log('Doctor changed to:', selectedDoctor);
+            setSpecializationFromDoctor(selectedDoctor);
+        });
+
+    } catch (error) {
+        console.error('Error initializing doctor selection:', error);
+    }
+});

@@ -78,14 +78,20 @@
     <div class="card-content">
         <% 
         // Filter appointments that are within the next 3 days
-        const today = new Date();
-        const threeDaysLater = new Date(today);
-        threeDaysLater.setDate(today.getDate() + 3);
-        
-        const upcomingAppointments = appointments.filter(appointment => {
-            const appointmentDate = new Date(appointment.date);
-            return appointmentDate >= today && appointmentDate <= threeDaysLater;
-        });
+const today = new Date();
+today.setHours(0, 0, 0, 0); // Set to beginning of day for proper comparison
+
+const threeDaysLater = new Date(today);
+threeDaysLater.setDate(today.getDate() + 3);
+threeDaysLater.setHours(23, 59, 59, 999); // Set to end of day for proper comparison
+
+const upcomingAppointments = appointments.filter(appointment => {
+    const appointmentDate = new Date(appointment.date);
+    appointmentDate.setHours(0, 0, 0, 0); // Set to beginning of day for proper comparison
+    
+    // Check if the appointment date is today or in the future, and within 3 days
+    return appointmentDate >= today && appointmentDate <= threeDaysLater;
+});
         
         if (upcomingAppointments.length > 0) { 
         %>
@@ -93,7 +99,7 @@
                 <div class="appointment-card">
                     <div class="appointment-info">
                         <div class="appointment-doctor"><%= appointment.doctor %></div>
-                        <div class="appointment-spec"><%= appointment.speciality %></div>
+                        <div class="appointment-spec"><%= appointment.specialization %></div>
                         <div class="appointment-time">
                             <span><i class="fas fa-calendar"></i> <%= new Date(appointment.date).toDateString() %></span>
                             <span><i class="fas fa-clock"></i> <%= appointment.time %></span>
@@ -103,7 +109,7 @@
                         <button class="btn btn-sm btn-primary reschedule-btn"
                                                 data-id="<%= appointment._id %>"
                                                 data-doctor="<%= appointment.doctor %>"
-                                                data-speciality="<%= appointment.speciality %>"
+                                                data-specialization="<%= appointment.specialization %>"
                                                 data-date="<%= appointment.date %>"
                                                 data-time="<%= appointment.time %>">
                                                 <i class="fas fa-calendar-alt"></i> Reschedule
@@ -373,8 +379,8 @@
                         <input type="text" id="rescheduleDoctor" name="doctor" readonly>
                     </div>
                     <div class="form-group">
-                        <label for="rescheduleSpeciality">Speciality</label>
-                        <input type="text" id="rescheduleSpeciality" name="speciality" readonly>
+                        <label for="reschedulespecialization">Specialization</label>
+                        <input type="text" id="reschedulespecialization" name="specialization" readonly>
                     </div>
                     <div class="form-group">
                         <label for="rescheduleDate">New Date</label>

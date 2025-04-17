@@ -74,14 +74,12 @@
                         <div class="form-row">
                             <div class="form-col">
                                 <div class="form-group">
-                                    <label for="speciality">Speciality</label>
-                                    <select id="speciality" name="speciality" required>
-                                        <option value="">Select speciality</option>
-                                        <option value="Cardiology">Cardiology</option>
-                                        <option value="Dermatology">Dermatology</option>
-                                        <option value="Orthopedics">Orthopedics</option>
-                                        <option value="Neurology">Neurology</option>
-                                        <option value="General">General Medicine</option>
+                                    <label for="specialization">Specialization</label>
+                                    <select id="specialization" name="specialization" required>
+                                        <option value="">Select Specialization</option>
+                                        <% specialities.forEach(function(spec) { %>
+                                            <option value="<%= spec %>"><%= spec %></option>
+                                        <% }) %>
                                     </select>
                                 </div>
                             </div>
@@ -90,14 +88,14 @@
                                     <label for="doctor">Doctor</label>
                                     <select id="doctor" name="doctor" required>
                                         <option value="">Select Doctor</option>
-                                        <option value="Dr. Sarah Johnson">Dr. Sarah Johnson</option>
-                                        <option value="Dr. Michael Chen">Dr. Michael Chen</option>
-                                        <option value="Dr. Robert Williams">Dr. Robert Williams</option>
-                                        <option value="Dr. Emily Baker">Dr. Emily Baker</option>
+                                        <% doctors.forEach(function(doc) { %>
+                                            <option value="<%= doc.name %>"><%= doc.name %></option>
+                                        <% }) %>
                                     </select>
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="form-row">
                             <div class="form-col">
                                 <div class="form-group">
@@ -141,7 +139,7 @@
                             <thead>
                                 <tr>
                                     <th>Doctor</th>
-                                    <th>Speciality</th>
+                                    <th>specialization</th>
                                     <th>Date</th>
                                     <th>Time</th>
                                     <th>Actions</th>
@@ -151,14 +149,14 @@
                                 <% appointments.forEach(appointment => { %>
                                     <tr>
                                         <td><%= appointment.doctor %></td>
-                                        <td><%= appointment.speciality %></td>
+                                        <td><%= appointment.specialization %></td>
                                         <td><%= new Date(appointment.date).toDateString() %></td>
                                         <td><%= appointment.time %></td>
                                         <td class="action-buttons">
                                             <button class="btn btn-sm btn-primary reschedule-btn"
                                                 data-id="<%= appointment._id %>"
                                                 data-doctor="<%= appointment.doctor %>"
-                                                data-speciality="<%= appointment.speciality %>"
+                                                data-specialization="<%= appointment.specialization %>"
                                                 data-date="<%= appointment.date %>"
                                                 data-time="<%= appointment.time %>">
                                                 <i class="fas fa-calendar-alt"></i> Reschedule
@@ -207,8 +205,8 @@
                         <input type="text" id="rescheduleDoctor" name="doctor" readonly>
                     </div>
                     <div class="form-group">
-                        <label for="rescheduleSpeciality">Speciality</label>
-                        <input type="text" id="rescheduleSpeciality" name="speciality" readonly>
+                        <label for="reschedulespecialization">specialization</label>
+                        <input type="text" id="reschedulespecialization" name="specialization" readonly>
                     </div>
                     <div class="form-group">
                         <label for="rescheduleDate">New Date</label>
@@ -237,7 +235,14 @@
         </div>
     </div>
 
-    <script src="/script/Script.js"></script>
+    <script id="doctor-data" type="application/json">
+        <%- JSON.stringify(doctors) %>
+    </script>
+    <script src="script/Script.js"></script>
+
+
+
+
 </body>
 
 </html>
