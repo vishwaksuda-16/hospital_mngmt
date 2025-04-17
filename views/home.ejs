@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System</title>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            position: relative;
+        }
+
+        
+        .background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background-image: url('/images/hospital-img.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: #3498db;
+}
+
+        
+        
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); 
+            z-index: -1; 
+        }
+
+       
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: relative;
+        }
+
+       
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .logo h3 {
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 30px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: #2c7dfa;
+        }
+
+        
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .content-box {
+            text-align: center;
+            color: #fff;
+            max-width: 600px;
+            padding: 40px;
+            background-color: rgba(255, 255, 255, 0.2); 
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-box h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .welcome-text {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .signup-btn {
+            background-color: #2c7dfa;
+            color: white;
+        }
+
+        .login-btn {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .signup-btn:hover {
+            background-color: #1c6dea;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+       
+        footer {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px 0; 
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 250px; 
+            padding: 0 20px;
+        }
+
+        .footer-section1 h4 {
+            font-size: 15px; 
+            margin-bottom: 5px; 
+            color: #2c7dfa;
+        }
+
+        .footer-section2 h4 {
+            font-size: 15px; 
+            margin-bottom: 5px; 
+            color: #2c7dfa;
+            padding-left: 100px;
+        }
+
+        .footer-section1 p {
+            line-height: 1.4; 
+            color: #f0f0f0;
+            font-size: 12px; 
+            margin-bottom: 3px;
+            
+        }
+
+        .footer-section2 p {
+            line-height: 1.4; 
+            color: #f0f0f0;
+            font-size: 12px; 
+            margin-bottom: 3px; 
+            padding-left: 100px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 8px; 
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 8px; 
+        }
+
+        .footer-bottom p {
+            font-size: 12px;
+            color: #f0f0f0;
+        }
+
+       
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 20px;
+            }
+            
+            nav ul {
+                margin-top: 20px;
+            }
+            
+            nav ul li {
+                margin-left: 15px;
+                margin-right: 15px;
+            }
+            
+            .content-box h1 {
+                font-size: 36px;
+            }
+            
+            .welcome-text {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .content-box {
+                padding: 20px;
+            }
+            
+            .content-box h1 {
+                font-size: 28px;
+            }
+            
+            .welcome-text {
+                font-size: 18px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="background-container"></div>
+    <div class="background-overlay"></div>
+    
+   
+    <div class="content-container">
+        <header>
+            <div class="logo">
+                <h3>HMS</h3>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/home">Home</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/services">Services</a></li>
+                    <li><a href="/doctorinfo">Doctors</a></li>
+                    <li><a href="/feedback">Feedback</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div class="content-box">
+                <h1>Hospital Management System</h1>
+                <p class="welcome-text">Welcome to our Healthcare Platform</p>
+                <div class="buttons">
+                    <button class="btn signup-btn" id="signup">Sign Up</button>
+                    <button class="btn login-btn" id="login">Login</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section1">
+                    <h4>Contact Us</h4>
+                    <p>Email: info@hospitalmgmt.com</p>
+                    <p>Phone: (123) 456-7890</p>
+                    <p>Address: 123 Healthcare Ave, Medical City</p>
+                </div>
+                <div class="footer-section2">
+                    <h4>Working Hours</h4>
+                    <p>Monday - Friday: 8:00 AM - 8:00 PM</p>
+                    <p>Saturday: 8:00 AM - 5:00 PM</p>
+                    <p>Sunday: 10:00 AM - 4:00 PM</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Hospital Management System. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+<script>
+    document.getElementById("signup").addEventListener("click",function(){
+        window.location.href="/signup";
+    });
+    document.getElementById("login").addEventListener("click",function(){
+        window.location.href="/login";
+    });
+</script>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Portal - Medical Records</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/styles/Styles.css">
+</head>
+
+<body>
+    <div class="portal-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-hospital"></i> <span>HMS</span></h2>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar"><%= user.name[0] %></div>
+                <div class="user-details">
+                    <div class="user-name"><%= user.name %></div>
+                    <div class="user-id">Patient ID: <%= user._id %></div>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/dashboard" class=><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
+                <li><a href="/appointments"><i class="fas fa-calendar-check"></i> <span>Appointments</span></a></li>
+                <li><a href="/medical_records" class="active"><i class="fas fa-file-medical"></i> <span>Medical Records</span></a>
+                </li>
+                <li><a href="/billing"><i class="fas fa-file-invoice-dollar"></i> <span>Billing &
+                            Insurance</span></a></li>
+                <li><a href="/documents"><i class="fas fa-folder-open"></i> <span>Documents</span></a></li>
+                <li><a href="/profile"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="window.location.href='/home'"><i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span></button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Topbar -->
+            <div class="topbar">
+                <button id="menu-toggle" class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    <h1 id="page-title">Medical Records</h1>
+                </div>
+                <div class="topbar-right">
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <div class="notification-badge">3</div>
+                    </button>
+                    <span>Welcome, <%= user.name.split(' ')[0] %></span>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div id="page-content active">
+                <!-- Medical Records Content -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Medical Records</h2>
+                    </div>
+                    <div class="tab-navigation">
+                        <button class="tab-btn active" onclick="switchTab('test-results-tab', this)">Test
+                            Results</button>
+                        <button class="tab-btn" onclick="switchTab('diagnosis-tab', this)">Diagnosis</button>
+                        <button class="tab-btn" onclick="switchTab('treatments-tab', this)">Treatments</button>
+                        <button class="tab-btn" onclick="switchTab('prescriptions-tab', this)">Prescriptions</button>
+                    </div>
+                    <div class="tab-content active" id="test-results-tab">
+                        <div class="record-item">
+                            <div class="record-icon">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                            <div class="record-info">
+                                <div class="record-title">Cardiac Evaluation</div>
+                                <div class="record-date">March 28, 2025</div>
+                            </div>
+                            <button class="record-action" title="View"><i class="fas fa-eye"></i> View</button>
+                            <button class="record-action" title="Download"><i class="fas fa-download"></i>
+                                Download</button>
+                        </div>
+                        <div class="record-item">
+                            <div class="record-icon">
+                                <i class="fas fa-vial"></i>
+                            </div>
+                            <div class="record-info">
+                                <div class="record-title">Blood Test Results</div>
+                                <div class="record-date">March 15, 2025</div>
+                            </div>
+                            <button class="record-action" title="View"><i class="fas fa-eye"></i> View</button>
+                            <button class="record-action" title="Download"><i class="fas fa-download"></i>
+                                Download</button>
+                        </div>
+                        <div class="record-item">
+                            <div class="record-icon">
+                                <i class="fas fa-x-ray"></i>
+                            </div>
+                            <div class="record-info">
+                                <div class="record-title">Chest X-Ray</div>
+                                <div class="record-date">January 10, 2025</div>
+                            </div>
+                            <button class="record-action" title="View"><i class="fas fa-eye"></i> View</button>
+                            <button class="record-action" title="Download"><i class="fas fa-download"></i>
+                                Download</button>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="diagnosis-tab">
+                        <div class="record-item">
+                            <div class="record-icon" style="background-color: #3498db;">
+                                <i class="fas fa-stethoscope"></i>
+                            </div>
+                            <div class="record-info">
+                                <div class="record-title">Hypertension Diagnosis</div>
+                                <div class="record-date">January 15, 2023</div>
+                            </div>
+                            <button class="record-action" title="View"><i class="fas fa-eye"></i> View</button>
+                            <button class="record-action" title="Download"><i class="fas fa-download"></i>
+                                Download</button>
+                        </div>
+                        <div class="record-item">
+                            <div class="record-icon" style="background-color: #3498db;">
+                                <i class="fas fa-lungs"></i>
+                            </div>
+                            <div class="record-info">
+                                <div class="record-title">Mild Asthma Diagnosis</div>
+                                <div class="record-date">March 10, 2020</div>
+                            </div>
+                            <button class="record-action" title="View"><i class="fas fa-eye"></i> View</button>
+                            <button class="record-action" title="Download"><i class="fas fa-download"></i>
+                                Download</button>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="treatments-tab">
+                        <div class="treatment-item">
+                            <div class="treatment-icon">
+                                <i class="fas fa-capsules"></i>
+                            </div>
+                            <div class="treatment-info">
+                                <div class="treatment-title">Hypertension Management</div>
+                                <div class="treatment-date">Started: Feb 15, 2025 - Ongoing</div>
+                                <div class="treatment-doctor">Dr. Sarah Johnson</div>
+                            </div>
+                            <button class="record-action" title="View"><i class="fas fa-eye"></i> View</button>
+                        </div>
+                        <div class="treatment-item">
+                            <div class="treatment-icon">
+                                <i class="fas fa-hand-holding-medical"></i>
+                            </div>
+                            <div class="treatment-info">
+                                <div class="treatment-title">Physical Therapy</div>
+                                <div class="treatment-date">Started: Mar 5, 2025 - Ends: May 5, 2025</div>
+                                <div class="treatment-doctor">Dr. Robert Williams</div>
+                            </div>
+                            <button class="record-action" title="View"><i class="fas fa-eye"></i> View</button>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="prescriptions-tab">
+                        <div class="treatment-item">
+                            <div class="treatment-icon" style="background-color: #e74c3c;">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                            <div class="treatment-info">
+                                <div class="treatment-title">Lisinopril 10mg</div>
+                                <div class="treatment-date">Prescribed: Feb 15, 2025 - Refills: 3</div>
+                                <div class="treatment-doctor">Dr. Sarah Johnson</div>
+                            </div>
+                            <button class="record-action" title="Request Refill"><i class="fas fa-sync-alt"></i> Request
+                                Refill</button>
+                        </div>
+                        <div class="treatment-item">
+                            <div class="treatment-icon" style="background-color: #e74c3c;">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                            <div class="treatment-info">
+                                <div class="treatment-title">Atorvastatin 20mg</div>
+                                <div class="treatment-date">Prescribed: Feb 15, 2025 - Refills: 3</div>
+                                <div class="treatment-doctor">Dr. Sarah Johnson</div>
+                            </div>
+                            <button class="record-action" title="Request Refill"><i class="fas fa-sync-alt"></i> Request
+                                Refill</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Health Summary -->
+                <div class="full-width-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Health Summary</h2>
+                        </div>
+                        <div class="tab-navigation">
+                            <button class="tab-btn active" onclick="switchTab('vitals-tab', this)">Vitals</button>
+                            <button class="tab-btn" onclick="switchTab('medications-tab', this)">Medications</button>
+                            <button class="tab-btn" onclick="switchTab('allergies-tab', this)">Allergies</button>
+                            <button class="tab-btn" onclick="switchTab('conditions-tab', this)">Conditions</button>
+                        </div>
+                        <div class="tab-content active" id="vitals-tab">
+                            <div class="content-grid">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h2 class="card-title">Blood Pressure</h2>
+                                    </div>
+                                    <div class="card-content">
+                                        <p>Latest: 120/80 mmHg (Normal)</p>
+                                        <p>Date: April 1, 2025</p>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h2 class="card-title">Heart Rate</h2>
+                                    </div>
+                                    <div class="card-content">
+                                        <p>Latest: 72 BPM (Normal)</p>
+                                        <p>Date: April 1, 2025</p>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h2 class="card-title">Weight</h2>
+                                    </div>
+                                    <div class="card-content">
+                                        <p>Latest: 175 lbs</p>
+                                        <p>Date: April 1, 2025</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="medications-tab">
+                            <div class="treatment-item">
+                                <div class="treatment-icon">
+                                    <i class="fas fa-pills"></i>
+                                </div>
+                                <div class="treatment-info">
+                                    <div class="treatment-title">Lisinopril 10mg</div>
+                                    <div class="treatment-date">Take once daily</div>
+                                    <div class="treatment-doctor">Prescribed by: Dr. Sarah Johnson</div>
+                                </div>
+                            </div>
+                            <div class="treatment-item">
+                                <div class="treatment-icon">
+                                    <i class="fas fa-pills"></i>
+                                </div>
+                                <div class="treatment-info">
+                                    <div class="treatment-title">Atorvastatin 20mg</div>
+                                    <div class="treatment-date">Take once daily at bedtime</div>
+                                    <div class="treatment-doctor">Prescribed by: Dr. Sarah Johnson</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="allergies-tab">
+                            <div class="treatment-item">
+                                <div class="treatment-icon" style="background-color: #e74c3c;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="treatment-info">
+                                    <div class="treatment-title">Penicillin</div>
+                                    <div class="treatment-date">Severe - Anaphylaxis</div>
+                                </div>
+                            </div>
+                            <div class="treatment-item">
+                                <div class="treatment-icon" style="background-color: #f39c12;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="treatment-info">
+                                    <div class="treatment-title">Shellfish</div>
+                                    <div class="treatment-date">Moderate - Hives</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="conditions-tab">
+                            <div class="treatment-item">
+                                <div class="treatment-icon" style="background-color: #3498db;">
+                                    <i class="fas fa-heartbeat"></i>
+                                </div>
+                                <div class="treatment-info">
+                                    <div class="treatment-title">Hypertension</div>
+                                    <div class="treatment-date">Diagnosed: January 2023</div>
+                                    <div class="treatment-doctor">Managed by: Dr. Sarah Johnson</div>
+                                </div>
+                            </div>
+                            <div class="treatment-item">
+                                <div class="treatment-icon" style="background-color: #3498db;">
+                                    <i class="fas fa-lungs"></i>
+                                </div>
+                                <div class="treatment-info">
+                                    <div class="treatment-title">Mild Asthma</div>
+                                    <div class="treatment-date">Diagnosed: March 2020</div>
+                                    <div class="treatment-doctor">Managed by: Dr. Michael Chen</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script/Script.js"></script>
+</body>
+
+</html>

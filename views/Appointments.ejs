@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HMS Patient Portal - Appointments</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/styles/Styles.css">
+</head>
+
+<body>
+    <div class="portal-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-hospital"></i> <span>HMS</span></h2>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    <%= user.name[0] %>
+                </div>
+                <div class="user-details">
+                    <div class="user-name">
+                        <%= user.name %>
+                    </div>
+                    <div class="user-id">Patient ID: <%= user._id %>
+                    </div>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/dashboard"><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
+                <li><a href="/appointments" class="active"><i class="fas fa-calendar-check"></i>
+                        <span>Appointments</span></a></li>
+                <li><a href="/medical_records"><i class="fas fa-file-medical"></i> <span>Medical Records</span></a></li>
+                <li><a href="/billing"><i class="fas fa-file-invoice-dollar"></i> <span>Billing & Insurance</span></a>
+                </li>
+                <li><a href="/documents"><i class="fas fa-folder-open"></i> <span>Documents</span></a></li>
+                <li><a href="/profile"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="window.location.href='/home'">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Topbar -->
+            <div class="topbar">
+                <button id="menu-toggle" class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    <h1>Manage Appointments</h1>
+                </div>
+                <div class="topbar-right">
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <div class="notification-badge">3</div>
+                    </button>
+                    <span>Welcome, <%= user.name.split(' ')[0] %></span>
+                </div>
+            </div>
+
+            <!-- Book Appointment Form -->
+            <form action="/appointments" method="post">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Book New Appointment</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="speciality">Speciality</label>
+                                    <select id="speciality" name="speciality" required>
+                                        <option value="">Select speciality</option>
+                                        <option value="Cardiology">Cardiology</option>
+                                        <option value="Dermatology">Dermatology</option>
+                                        <option value="Orthopedics">Orthopedics</option>
+                                        <option value="Neurology">Neurology</option>
+                                        <option value="General">General Medicine</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="doctor">Doctor</label>
+                                    <select id="doctor" name="doctor" required>
+                                        <option value="">Select Doctor</option>
+                                        <option value="Dr. Sarah Johnson">Dr. Sarah Johnson</option>
+                                        <option value="Dr. Michael Chen">Dr. Michael Chen</option>
+                                        <option value="Dr. Robert Williams">Dr. Robert Williams</option>
+                                        <option value="Dr. Emily Baker">Dr. Emily Baker</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="date">Date</label>
+                                    <input type="date" id="date" name="date" required>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="time">Time</label>
+                                    <select id="time" name="time" required>
+                                        <option value="">Select Time</option>
+                                        <option value="09:00 am">9:00 AM</option>
+                                        <option value="10:00 am">10:00 AM</option>
+                                        <option value="11:00 am">11:00 AM</option>
+                                        <option value="12:00 pm">12:00 PM</option>
+                                        <option value="13:00 pm">13:00 PM</option>
+                                        <option value="14:00 pm">14:00 PM</option>
+                                        <option value="15:00 pm">15:00 PM</option>
+                                        <option value="16:00 pm">16:00 PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="reset" class="btn btn-secondary">Clear</button>
+                            <button type="submit" class="btn btn-primary">Book Appointment</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Your Appointments Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Your Appointments</h2>
+                </div>
+                <div class="card-content">
+                    <% if (appointments && appointments.length > 0) { %>
+                        <table class="table table-bordered table-striped text-center align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Speciality</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% appointments.forEach(appointment => { %>
+                                    <tr>
+                                        <td><%= appointment.doctor %></td>
+                                        <td><%= appointment.speciality %></td>
+                                        <td><%= new Date(appointment.date).toDateString() %></td>
+                                        <td><%= appointment.time %></td>
+                                        <td class="action-buttons">
+                                            <button class="btn btn-sm btn-primary reschedule-btn"
+                                                data-id="<%= appointment._id %>"
+                                                data-doctor="<%= appointment.doctor %>"
+                                                data-speciality="<%= appointment.speciality %>"
+                                                data-date="<%= appointment.date %>"
+                                                data-time="<%= appointment.time %>">
+                                                <i class="fas fa-calendar-alt"></i> Reschedule
+                                            </button>
+                                                <div>
+                                                    
+                                                    <button class="btn-danger" data-id="<%= appointment._id %>">Delete</button>
+                                                    
+                                                    <div id="deleteModal" class="modal-overlay">
+                                                        <div class="modal-box">
+                                                            <p>Are you sure you want to delete this appointment?</p>
+                                                            <div class="modal-buttons">
+                                                                <button id="confirmDeleteBtn" class="btn btn-danger" data-id="<%= appointment._id %>">Yes, Delete</button>
+                                                                <button id="cancelDeleteBtn" class="btn btn-secondary">Cancel</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>                                        
+                            </form>
+                            </td>
+                            </tr>
+                            <% }) %>
+                                </tbody>
+                                </table>
+                                <% } else { %>
+                                    <p>No appointments booked yet.</p>
+                                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reschedule Modal -->
+    <div id="rescheduleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Reschedule Appointment</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="rescheduleForm" action="/appointments" method="POST">
+                    <input type="hidden" id="appointmentId" name="appointmentId">
+                    <div class="form-group">
+                        <label for="rescheduleDoctor">Doctor</label>
+                        <input type="text" id="rescheduleDoctor" name="doctor" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="rescheduleSpeciality">Speciality</label>
+                        <input type="text" id="rescheduleSpeciality" name="speciality" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="rescheduleDate">New Date</label>
+                        <input type="date" id="rescheduleDate" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="rescheduleTime">New Time</label>
+                        <select id="rescheduleTime" name="time" required>
+                            <option value="">Select Time</option>
+                                        <option value="09:00 am">9:00 AM</option>
+                                        <option value="10:00 am">10:00 AM</option>
+                                        <option value="11:00 am">11:00 AM</option>
+                                        <option value="12:00 pm">12:00 PM</option>
+                                        <option value="13:00 pm">13:00 PM</option>
+                                        <option value="14:00 pm">14:00 PM</option>
+                                        <option value="15:00 pm">15:00 PM</option>
+                                        <option value="16:00 pm">16:00 PM</option>
+                        </select>
+                    </div>
+                    <div class="form-actions modal-actions">
+                        <button type="button" class="btn btn-secondary" id="closeModal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script/Script.js"></script>
+</body>
+
+</html>

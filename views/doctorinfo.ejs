@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System - Doctors</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            position: relative;
+            background-color: #f5f5f5;
+        }
+
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-image: url('/images/hospital-img.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: #3498db;
+        }
+
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .logo h3 {
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 30px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: #2c7dfa;
+        }
+
+        nav ul li a.active {
+            color: #2c7dfa;
+            font-weight: bold;
+        }
+
+        main {
+            flex: 1;
+            padding: 40px 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            color: #fff;
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .doctors-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .doctor-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .doctor-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .doctorinfo {
+            padding: 20px;
+        }
+
+        .doctor-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .doctor-specialty {
+            font-size: 16px;
+            color: #2c7dfa;
+            margin-bottom: 10px;
+        }
+
+        .doctor-details {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .doctor-contact {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .schedule-btn {
+            padding: 8px 16px;
+            background-color: #2c7dfa;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .schedule-btn:hover {
+            background-color: #1c6dea;
+        }
+
+        footer {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+            padding: 0 20px;
+        }
+
+        .footer-section1 h4 {
+            font-size: 15px;
+            margin-bottom: 5px;
+            color: #2c7dfa;
+        }
+
+        .footer-section2 h4 {
+            font-size: 15px;
+            margin-bottom: 5px;
+            color: #2c7dfa;
+            padding-left: 100px;
+        }
+
+        .footer-section1 p {
+            line-height: 1.4;
+            color: #f0f0f0;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        .footer-section2 p {
+            line-height: 1.4;
+            color: #f0f0f0;
+            font-size: 12px;
+            margin-bottom: 3px;
+            padding-left: 100px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 8px;
+        }
+
+        .footer-bottom p {
+            font-size: 12px;
+            color: #f0f0f0;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            nav ul {
+                margin-top: 20px;
+            }
+
+            nav ul li {
+                margin-left: 15px;
+                margin-right: 15px;
+            }
+
+            .page-title {
+                font-size: 28px;
+            }
+
+            .doctors-container {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .doctor-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-container"></div>
+    <div class="background-overlay"></div>
+
+    <div class="content-container">
+        <header>
+            <div class="logo">
+                <h3>HMS</h3>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/home">Home</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/services">Services</a></li>
+                    <li><a href="/doctorinfo" class="active">Doctors</a></li>
+                    <li><a href="/feedback">Feedback</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <h1 class="page-title">Our Medical Professionals</h1>
+
+            <div class="doctors-container">
+                <!-- Doctor 1 -->
+                <div class="doctor-card">
+                    <img src="/images/doctor1.jpg" alt="Dr. Sarah Johnson" class="doctor-image">
+                    <div class="doctorinfo">
+                        <h3 class="doctor-name">Dr. Sarah Johnson</h3>
+                        <p class="doctor-specialty">Cardiology</p>
+                        <p class="doctor-details">MD, FACC with over 15 years of experience in treating cardiovascular
+                            disorders. Specializes in interventional cardiology and heart failure management.</p>
+                        <div class="doctor-contact">
+                            <p>Availability: Mon-Fri</p>
+                            <button class="schedule-btn" onclick="scheduleAppointment('1')">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor 2 -->
+                <div class="doctor-card">
+                    <img src="/images/doctor2.jpg" alt="Dr. Michael Chen" class="doctor-image">
+                    <div class="doctorinfo">
+                        <h3 class="doctor-name">Dr. Michael Chen</h3>
+                        <p class="doctor-specialty">Neurology</p>
+                        <p class="doctor-details">Board-certified neurologist specializing in stroke treatment,
+                            epilepsy, and neurodegenerative diseases. Published researcher with expertise in
+                            neuroimaging.</p>
+                        <div class="doctor-contact">
+                            <p>Availability: Tue-Sat</p>
+                            <button class="schedule-btn" onclick="scheduleAppointment('2')">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor 3 -->
+                <div class="doctor-card">
+                    <img src="/images/doctor3.jpg" alt="Dr. Emily Rodriguez" class="doctor-image">
+                    <div class="doctorinfo">
+                        <h3 class="doctor-name">Dr. Emily Rodriguez</h3>
+                        <p class="doctor-specialty">Pediatrics</p>
+                        <p class="doctor-details">Compassionate pediatrician with 12 years of experience in child
+                            healthcare. Special focus on developmental disorders and preventive care.</p>
+                        <div class="doctor-contact">
+                            <p>Availability: Mon-Thu</p>
+                            <button class="schedule-btn" onclick="scheduleAppointment('3')">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor 4 -->
+                <div class="doctor-card">
+                    <img src="/images/doctor4.jpg" alt="Dr. James Wilson" class="doctor-image">
+                    <div class="doctorinfo">
+                        <h3 class="doctor-name">Dr. James Wilson</h3>
+                        <p class="doctor-specialty">Orthopedics</p>
+                        <p class="doctor-details">Fellowship-trained orthopedic surgeon specializing in sports medicine,
+                            joint replacement, and minimally invasive surgical techniques.</p>
+                        <div class="doctor-contact">
+                            <p>Availability: Wed-Sun</p>
+                            <button class="schedule-btn" onclick="scheduleAppointment('4')">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor 5 -->
+                <div class="doctor-card">
+                    <img src="/images/doctor5.jpeg" alt="Dr. Priya Patel" class="doctor-image">
+                    <div class="doctorinfo">
+                        <h3 class="doctor-name">Dr. Priya Patel</h3>
+                        <p class="doctor-specialty">Dermatology</p>
+                        <p class="doctor-details">Board-certified dermatologist with expertise in cosmetic procedures,
+                            skin cancer treatment, and complex skin disorders management.</p>
+                        <div class="doctor-contact">
+                            <p>Availability: Mon-Fri</p>
+                            <button class="schedule-btn" onclick="scheduleAppointment('5')">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor 6 -->
+                <div class="doctor-card">
+                    <img src="/images/doctor6.jpg" alt="Dr. Robert Thompson" class="doctor-image">
+                    <div class="doctorinfo">
+                        <h3 class="doctor-name">Dr. Robert Thompson</h3>
+                        <p class="doctor-specialty">Oncology</p>
+                        <p class="doctor-details">Medical oncologist focused on personalized cancer treatment
+                            approaches. Leads clinical trials for innovative cancer therapies.</p>
+                        <div class="doctor-contact">
+                            <p>Availability: Tue-Sat</p>
+                            <button class="schedule-btn" onclick="scheduleAppointment('6')">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor 7 -->
+                <div class="doctor-card">
+                    <img src="/images/doctor7.png" alt="Dr. Sophia Kim" class="doctor-image">
+                    <div class="doctorinfo">
+                        <h3 class="doctor-name">Dr. Sophia Kim</h3>
+                        <p class="doctor-specialty">OB/GYN</p>
+                        <p class="doctor-details">Specializes in high-risk pregnancies, fertility treatments, and
+                            women's reproductive health with a holistic approach to patient care.</p>
+                        <div class="doctor-contact">
+                            <p>Availability: Mon-Wed, Fri</p>
+                            <button class="schedule-btn" onclick="scheduleAppointment('7')">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor 8 -->
+                <div class="doctor-card">
+                    <img src="/images/doctor8.png" alt="Dr. David Garcia" class="doctor-image">
+                    <div class="doctorinfo">
+                        <h3 class="doctor-name">Dr. David Garcia</h3>
+                        <p class="doctor-specialty">Psychiatry</p>
+                        <p class="doctor-details">Expert in treating mood disorders, anxiety, and psychological trauma.
+                            Employs evidence-based therapy approaches and medication management.</p>
+                        <div class="doctor-contact">
+                            <p>Availability: Mon, Wed, Thu</p>
+                            <button class="schedule-btn" onclick="scheduleAppointment('8')">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor 9 -->
+                <div class="doctor-card">
+                    <img src="/images/doctor9.png" alt="Dr. Olivia Washington" class="doctor-image">
+                    <div class="doctorinfo">
+                        <h3 class="doctor-name">Dr. Olivia Washington</h3>
+                        <p class="doctor-specialty">Endocrinology</p>
+                        <p class="doctor-details">Specializes in thyroid disorders, diabetes management, and hormonal
+                            imbalances. Recognized for patient education and comprehensive care approach.</p>
+                        <div class="doctor-contact">
+                            <p>Availability: Tue-Fri</p>
+                            <button class="schedule-btn" onclick="scheduleAppointment('9')">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor 10 -->
+                <div class="doctor-card">
+                    <img src="/images/doctor10.png" alt="Dr. Benjamin Lee" class="doctor-image">
+                    <div class="doctorinfo">
+                        <h3 class="doctor-name">Dr. Benjamin Lee</h3>
+                        <p class="doctor-specialty">Pulmonology</p>
+                        <p class="doctor-details">Pulmonary specialist with expertise in treating respiratory conditions
+                            including asthma, COPD, and sleep apnea. Focuses on minimally invasive diagnostic
+                            procedures.</p>
+                        <div class="doctor-contact">
+                            <p>Availability: Mon-Thu</p>
+                            <button class="schedule-btn" onclick="scheduleAppointment('10')">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section1">
+                    <h4>Contact Us</h4>
+                    <p>Email: info@hospitalmgmt.com</p>
+                    <p>Phone: (123) 456-7890</p>
+                    <p>Address: 123 Healthcare Ave, Medical City</p>
+                </div>
+                <div class="footer-section2">
+                    <h4>Working Hours</h4>
+                    <p>Monday - Friday: 8:00 AM - 8:00 PM</p>
+                    <p>Saturday: 8:00 AM - 5:00 PM</p>
+                    <p>Sunday: 10:00 AM - 4:00 PM</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Hospital Management System. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function scheduleAppointment(doctorId) {
+            // You can implement redirection to appointment page or modal popup
+            alert('Redirecting to appointment scheduling for doctor ID: ' + doctorId);
+            // window.location.href = `/appointment/${doctorId}`;
+        }
+    </script>
+</body>
+
+</html>
