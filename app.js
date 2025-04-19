@@ -3,7 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const session = require('express-session');
-const { User, Patient, Doctor, Admin, Appointment } = require('./models/user');
+const { User, Patient, Doctor, Admin, Appointment, Feedback } = require('./models/user');
 
 mongoose.connect('mongodb://localhost:27017/Hospital', {
     useNewUrlParser: true,
@@ -46,9 +46,23 @@ app.get('/doctorinfo', (req, res) => {
     res.render('doctorinfo');
 })
 
-app.get('/feedback', (req, res) => {
-    res.render('feedback');
-})
+app.get('/feedback', async (req, res) => {
+    try {
+        // Fetch recent feedbacks to display (limit to 10)
+        const recentFeedbacks = await Feedback.find()
+            .populate({
+                path: 'userID',
+                select: 'UserName' // Get username only
+            })
+            .sort({ createdAt: -1 }) // Most recent first
+            .limit(10);
+
+        res.render('feedback', { feedbacks: recentFeedbacks });
+    } catch (error) {
+        console.error('Error fetching feedbacks:', error);
+        res.render('feedback', { feedbacks: [] });
+    }
+});
 
 app.get('/signup', (req, res) => {
     res.render('signup');
@@ -400,6 +414,53 @@ app.delete('/appointments/:id', async (req, res) => {
     } catch (error) {
         console.error('Error deleting appointment:', error);
         res.status(500).send('Server error');
+    }
+});
+
+app.get('/patient-feedback', async (req, res) => {
+    const userId = req.session.userId;
+
+    if (!userId) {
+        return res.redirect('/login');
+    }
+
+    // Find the patient information
+    const patient = await Patient.findOne({ userID: userId }).populate('userID');
+
+    if (!patient) {
+        return res.send('Patient not found');
+    }
+
+    res.render('patient-feedback', { user: patient });
+});
+
+// Add this route to handle feedback form submission from patient portal
+app.post('/submit-patient-feedback', async (req, res) => {
+    try {
+        const userId = req.session.userId;
+
+        if (!userId) {
+            return res.redirect('/login');
+        }
+
+        // Get form data
+        const { rating, feedback } = req.body;
+
+        // Create new feedback
+        const newFeedback = new Feedback({
+            userID: userId,
+            feedback: feedback,
+            rating: parseInt(rating)
+        });
+
+        // Save feedback to database
+        await newFeedback.save();
+
+        // Redirect with success message
+        res.redirect('/patient-feedback?success=true');
+    } catch (error) {
+        console.error('Error submitting feedback:', error);
+        res.redirect('/patient-feedback?error=true');
     }
 });
 

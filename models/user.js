@@ -68,5 +68,13 @@ const AppointmentSchema = new Schema({
 
 const Appointment = mongoose.model('Appointment', AppointmentSchema);
 
+const FeedbackSchema = new Schema({
+    userID: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    feedback: { type: String, required: true },
+    rating: { type: Number, required: true }
+});
 
-module.exports = { User, Patient, Doctor, Admin, Appointment };
+const Feedback = mongoose.model('Feedback', FeedbackSchema);
+
+
+module.exports = { User, Patient, Doctor, Admin, Appointment, Feedback };

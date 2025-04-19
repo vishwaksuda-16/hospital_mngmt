@@ -395,122 +395,41 @@
 
         <main>
             <h1 class="page-title">Patient Feedback</h1>
-            
-            <div class="feedback-container">
-                <div class="feedback-form-container">
-                    <h2 class="form-title">Share Your Experience</h2>
-                    <form class="feedback-form" id="feedbackForm" action="/submit-feedback" method="POST">
-                        <div class="form-group">
-                            <label for="name">Your Name</label>
-                            <input type="text" id="name" name="name" class="form-control" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="email">Email Address</label>
-                            <input type="email" id="email" name="email" class="form-control" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Service Rating</label>
-                            <div class="star-rating">
-                                <input type="radio" id="star5" name="rating" value="5" />
-                                <label for="star5">★</label>
-                                <input type="radio" id="star4" name="rating" value="4" />
-                                <label for="star4">★</label>
-                                <input type="radio" id="star3" name="rating" value="3" />
-                                <label for="star3">★</label>
-                                <input type="radio" id="star2" name="rating" value="2" />
-                                <label for="star2">★</label>
-                                <input type="radio" id="star1" name="rating" value="1" />
-                                <label for="star1">★</label>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="doctor">Doctor Seen (Optional)</label>
-                            <select id="doctor" name="doctor" class="form-control">
-                                <option value="">Select a doctor</option>
-                                <option value="1">Dr. Sarah Johnson</option>
-                                <option value="2">Dr. Michael Chen</option>
-                                <option value="3">Dr. Emily Rodriguez</option>
-                                <option value="4">Dr. James Wilson</option>
-                                <option value="5">Dr. Patricia Thomas</option>
-                                <option value="6">Dr. Robert Kumar</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="department">Department (Optional)</label>
-                            <select id="department" name="department" class="form-control">
-                                <option value="">Select a department</option>
-                                <option value="cardiology">Cardiology</option>
-                                <option value="neurology">Neurology</option>
-                                <option value="orthopedics">Orthopedics</option>
-                                <option value="pediatrics">Pediatrics</option>
-                                <option value="oncology">Oncology</option>
-                                <option value="gynecology">Gynecology</option>
-                                <option value="dermatology">Dermatology</option>
-                                <option value="emergency">Emergency</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="visit-date">Date of Visit</label>
-                            <input type="date" id="visit-date" name="visit-date" class="form-control" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="feedback">Your Feedback</label>
-                            <textarea id="feedback" name="feedback" class="form-control" required placeholder="Please share your experience with us. What went well? What could we improve?"></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="improvements">Suggestions for Improvement (Optional)</label>
-                            <textarea id="improvements" name="improvements" class="form-control" placeholder="Any specific suggestions that could help us serve you better?"></textarea>
-                        </div>
-                        
-                        <button type="submit" class="submit-btn">Submit Feedback</button>
-                    </form>
-                </div>
                 
-                <div class="testimonials-container">
-                    <h2 class="testimonials-title">What Our Patients Say</h2>
-                    <div class="testimonials-list">
-                        <div class="testimonial-card">
-                            <div class="testimonial-header">
-                                <span class="testimonial-author">John D.</span>
-                                <span class="testimonial-date">March 15, 2025</span>
-                            </div>
-                            <div class="testimonial-rating">★★★★★</div>
-                            <p class="testimonial-content">The care I received from Dr. Johnson was exceptional. The staff was attentive and made me feel comfortable throughout my stay. The facilities are modern and clean. I would highly recommend this hospital to anyone.</p>
-                        </div>
-                        
-                        <div class="testimonial-card">
-                            <div class="testimonial-header">
-                                <span class="testimonial-author">Maria G.</span>
-                                <span class="testimonial-date">February 28, 2025</span>
-                            </div>
-                            <div class="testimonial-rating">★★★★☆</div>
-                            <p class="testimonial-content">My experience with Dr. Chen was very positive. He explained everything clearly and answered all my questions. The only issue was the long waiting time for my appointment, but the quality of care made up for it.</p>
-                        </div>
-                        
-                        <div class="testimonial-card">
-                            <div class="testimonial-header">
-                                <span class="testimonial-author">Robert K.</span>
-                                <span class="testimonial-date">February 12, 2025</span>
-                            </div>
-                            <div class="testimonial-rating">★★★★★</div>
-                            <p class="testimonial-content">The emergency department responded quickly to my situation. Dr. Wilson was professional and thorough. The nurses were compassionate and attentive. I'm grateful for the excellent care I received during a difficult time.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="pagination">
-                        <button class="pagination-btn active">1</button>
-                        <button class="pagination-btn">2</button>
-                        <button class="pagination-btn">3</button>
-                        <button class="pagination-btn">Next</button>
-                    </div>
-                </div>
+
+<div class="testimonials-container">
+    <h2 class="testimonials-title">What Our Patients Say</h2>
+    <div class="testimonials-list">
+        <% if (feedbacks && feedbacks.length > 0) { %>
+            <% feedbacks.forEach(function(feedback) { %>
+                <!-- Modified section in feedback.ejs to display full name and remove date -->
+<div class="testimonial-card">
+    <div class="testimonial-header">
+        <span class="testimonial-author">
+            <!-- Display full name instead of just initials -->
+            <%= feedback.userID.UserName ? feedback.userID.UserName : 'Anonymous' %>
+        </span>
+        <!-- Date display has been removed -->
+    </div>
+    <div class="testimonial-rating">
+        <% for(let i = 0; i < 5; i++) { %>
+            <% if (i < feedback.rating) { %>
+                ★
+            <% } else { %>
+                ☆
+            <% } %>
+        <% } %>
+    </div>
+    <p class="testimonial-content"><%= feedback.feedback %></p>
+</div>
+            <% }); %>
+        <% } else { %>
+            <div class="testimonial-card">
+                <p class="testimonial-content">No feedbacks yet. Be the first to share your experience!</p>
+            </div>
+        <% } %>
+    </div>
+</div>
             </div>
         </main>
 

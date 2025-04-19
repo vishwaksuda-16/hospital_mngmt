@@ -1,0 +1,301 @@
+<!-- Create a new file called 'patient-feedback.ejs' in your views folder -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Feedback | Patient Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/styles/Styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .portal-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #34495e;
+            text-align: center;
+        }
+
+        .sidebar-header h3 {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        .sidebar-menu li {
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu li:hover {
+            background-color: #34495e;
+        }
+
+        .sidebar-menu li.active {
+            background-color: #3498db;
+            border-left: 4px solid #f39c12;
+        }
+
+        .sidebar-menu a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .page-title {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .feedback-form-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            cursor: pointer;
+            font-size: 30px;
+            color: #ddd;
+            margin-right: 5px;
+            transition: color 0.2s ease;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover~label,
+        .star-rating input:checked~label {
+            color: #ffcc00;
+        }
+
+        .submit-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="portal-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>Patient Portal</h3>
+                <p>Welcome, <%= user.name %>
+                </p>
+            </div>
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-hospital"></i> <span>HMS</span></h2>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <%= user.name[0] %>
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name">
+                            <%= user.name %>
+                        </div>
+                        <div class="user-id">Patient ID: <%= user._id %>
+                        </div>
+
+                    </div>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/dashboard" class="active"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
+                    </li>
+                    <li><a href="/appointments"><i class="fas fa-calendar-check"></i> <span>Appointments</span></a></li>
+                    <li><a href="/medical_records"><i class="fas fa-file-medical"></i> <span>Medical Records</span></a>
+                    </li>
+                    <li><a href="/billing"><i class="fas fa-file-invoice-dollar"></i> <span>Billing &
+                                Insurance</span></a></li>
+                    <li><a href="/documents"><i class="fas fa-folder-open"></i> <span>Documents</span></a></li>
+                    <li><a href="/patient-feedback"><i class="fas fa-procedures"></i> <span>Feedback</span></a></li>
+                    <li><a href="/profile"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <button class="logout-btn" onclick="window.location.href='/home'"><i
+                            class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span></button>
+                </div>
+            </aside>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <h2 class="page-title">Submit Your Feedback</h2>
+            </div>
+
+            <% if (typeof success !=='undefined' && success) { %>
+                <div class="alert alert-success">
+                    Thank you for your feedback! Your input helps us improve our services.
+                </div>
+                <% } %>
+
+                    <% if (typeof error !=='undefined' && error) { %>
+                        <div class="alert alert-danger">
+                            There was an error submitting your feedback. Please try again.
+                        </div>
+                        <% } %>
+
+                            <div class="feedback-form-container">
+                                <form action="/submit-patient-feedback" method="POST" id="feedbackForm">
+                                    <div class="form-group">
+                                        <label for="rating">How would you rate your experience?</label>
+                                        <div class="star-rating">
+                                            <input type="radio" id="star5" name="rating" value="5" />
+                                            <label for="star5">★</label>
+                                            <input type="radio" id="star4" name="rating" value="4" />
+                                            <label for="star4">★</label>
+                                            <input type="radio" id="star3" name="rating" value="3" />
+                                            <label for="star3">★</label>
+                                            <input type="radio" id="star2" name="rating" value="2" />
+                                            <label for="star2">★</label>
+                                            <input type="radio" id="star1" name="rating" value="1" />
+                                            <label for="star1">★</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="feedback">Your Feedback</label>
+                                        <textarea id="feedback" name="feedback" class="form-control"
+                                            placeholder="Please share your experience with us. What went well? What could we improve?"
+                                            required></textarea>
+                                    </div>
+
+                                    <button type="submit" class="submit-btn">Submit Feedback</button>
+                                </form>
+                            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation
+        document.getElementById('feedbackForm').addEventListener('submit', function (event) {
+            const feedback = document.getElementById('feedback').value;
+            const rating = document.querySelector('input[name="rating"]:checked');
+
+            let isValid = true;
+
+            if (!feedback || feedback.trim() === '') {
+                alert('Please provide your feedback');
+                isValid = false;
+            }
+
+            if (!rating) {
+                alert('Please provide a rating');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+    </script>
+    <script src="script/Script.js"></script>
+</body>
+
+</html>
