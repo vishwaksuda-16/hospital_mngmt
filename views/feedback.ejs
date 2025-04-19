@@ -406,10 +406,8 @@
 <div class="testimonial-card">
     <div class="testimonial-header">
         <span class="testimonial-author">
-            <!-- Display full name instead of just initials -->
             <%= feedback.userID.UserName ? feedback.userID.UserName : 'Anonymous' %>
         </span>
-        <!-- Date display has been removed -->
     </div>
     <div class="testimonial-rating">
         <% for(let i = 0; i < 5; i++) { %>
