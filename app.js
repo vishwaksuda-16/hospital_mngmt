@@ -17,6 +17,7 @@ db.once("open", () => {
 });
 
 const app = express();
+app.use(express.json());
 
 app.use(session({
     secret: 'hospital-management-secret',
@@ -464,6 +465,73 @@ app.post('/submit-patient-feedback', async (req, res) => {
     }
 });
 
+app.post('/api/user/profile', async (req, res) => {
+    try {
+        console.log(req.body);
+        const userId = req.session.userId;
+
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const patient = await Patient.findOne({ userID: userId });
+
+        if (!patient) {
+            return res.status(404).json({ error: 'Patient not found' });
+        }
+
+        // Update patient information
+        patient.name = req.body.name;
+        patient.dob = req.body.dob;
+        patient.gender = req.body.gender;
+        patient.contactDetails.email = req.body.contactDetails.email;
+        patient.contactDetails.phone = req.body.contactDetails.phone;
+        patient.address = req.body.address;
+
+        await patient.save();
+
+        res.status(200).json({ success: true, message: 'Profile updated successfully' });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// API endpoint to change password
+app.post('/api/user/password', async (req, res) => {
+    try {
+        console.log(req.body);
+        const userId = req.session.userId;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const { currentPassword, newPassword } = req.body;
+
+        // Find the user
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Verify current password
+        if (user.Password !== currentPassword) {
+            return res.status(400).json({ error: 'Current password is incorrect' });
+        }
+
+        // Update password
+        user.Password = newPassword;
+        await user.save();
+
+        res.status(200).json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Error updating password:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
 app.listen(5085, () => {
     console.log('Serving on port 5085');
