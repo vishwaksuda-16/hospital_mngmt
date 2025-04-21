@@ -20,12 +20,7 @@ const PatientSchema = new Schema({
         phone: { type: String, required: true },
         email: { type: String, required: true }
     },
-    address: { type: String, required: true },
-    medicalHistory: { type: String, required: true },
-    insuranceDetails: {
-        provider: { type: String },
-        policyNumber: { type: String }
-    }
+    address: { type: String, required: true }
 }, { timestamps: true });
 
 const Patient = mongoose.model('Patient', PatientSchema);

@@ -116,9 +116,7 @@ app.post('/patient-form', async (req, res) => {
             dob,
             gender,
             contactDetails: { phone, email },
-            address,
-            medicalHistory,
-            insuranceDetails: { provider, policyNumber }
+            address
         });
         await newPatient.save();
         res.redirect('/home');
