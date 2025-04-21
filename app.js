@@ -533,6 +533,161 @@ app.post('/api/user/password', async (req, res) => {
     }
 });
 
+const crypto = require('crypto'); // Node.js built-in crypto module
+const nodemailer = require('nodemailer'); // You'll need to install this: npm install nodemailer
+
+// Set up Nodemailer transporter
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // You can use other services like SendGrid, Mailgun, etc.
+    auth: {
+        user: 'vishwaksuda@gmail.com', // Replace with your email
+        pass: 'uhoc pinh rayy qduw' // Replace with your password or app password
+    }
+});
+
+// Handle forgot password form submission
+app.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        let user = null;
+        let userModel = null;
+
+        // First, try to find a patient with this email
+        const patient = await Patient.findOne({ 'contactDetails.email': email }).populate('userID');
+        if (patient && patient.userID) {
+            user = patient.userID;
+            userModel = 'Patient';
+        }
+
+        // If not found, try to find a doctor with this email
+        if (!user) {
+            const doctor = await Doctor.findOne({ 'contactDetails.email': email }).populate('userID');
+            if (doctor && doctor.userID) {
+                user = doctor.userID;
+                userModel = 'Doctor';
+            }
+        }
+
+        // If still not found, try to find an admin with this email
+        if (!user) {
+            const admin = await Admin.findOne({ 'contactDetails.email': email }).populate('userID');
+            if (admin && admin.userID) {
+                user = admin.userID;
+                userModel = 'Admin';
+            }
+        }
+
+        // If user not found in any collection, return generic response
+        if (!user) {
+            console.log(`Password reset requested for non-existent email: ${email}`);
+            return res.send({
+                success: true,
+                message: "If your email exists in our system, you will receive password reset instructions."
+            });
+        }
+
+        // Generate random token and expiry
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
+
+        // Update user with reset token
+        user.resetToken = resetToken;
+        user.resetTokenExpiry = resetTokenExpiry;
+        await user.save();
+
+        // Create reset URL
+        const resetUrl = `http://${req.headers.host}/reset-password/${resetToken}`;
+
+        // Send email
+        const mailOptions = {
+            from: 'your-email@gmail.com',
+            to: email,
+            subject: 'Password Reset - Hospital Management System',
+            html: `
+                <p>You requested a password reset for the Hospital Management System.</p>
+                <p>Please click the link below to reset your password:</p>
+                <a href="${resetUrl}">Reset My Password</a>
+                <p>This link is valid for 1 hour.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.send({
+            success: true,
+            message: "If your email exists in our system, you will receive password reset instructions."
+        });
+
+    } catch (error) {
+        console.error('Error in forgot password:', error);
+        res.status(500).send('An error occurred. Please try again later.');
+    }
+});
+
+// Route to serve the reset password form
+app.get('/reset-password/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        // Find user with this token and check if token is still valid
+        const user = await User.findOne({
+            resetToken: token,
+            resetTokenExpiry: { $gt: Date.now() } // Token should not be expired
+        });
+
+        if (!user) {
+            return res.render('error', { message: 'Password reset token is invalid or has expired.' });
+        }
+
+        // Render the password reset form
+        res.render('reset-password', { token });
+
+    } catch (error) {
+        console.error('Error in reset password page:', error);
+        res.status(500).send('An error occurred. Please try again later.');
+    }
+});
+
+// Handle password reset form submission
+app.post('/reset-password/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { password, confirmPassword } = req.body;
+
+        // Validate password
+        if (password !== confirmPassword) {
+            return res.render('reset-password', {
+                token,
+                error: 'Passwords do not match'
+            });
+        }
+
+        // Find user with valid token
+        const user = await User.findOne({
+            resetToken: token,
+            resetTokenExpiry: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.render('error', { message: 'Password reset token is invalid or has expired.' });
+        }
+
+        // Update password and clear reset token
+        user.Password = password;
+        user.resetToken = undefined;
+        user.resetTokenExpiry = undefined;
+        await user.save();
+
+        // Redirect to login with success message
+        res.redirect('/login?passwordReset=true');
+
+    } catch (error) {
+        console.error('Error in reset password submission:', error);
+        res.status(500).send('An error occurred. Please try again later.');
+    }
+});
+
 app.listen(5085, () => {
     console.log('Serving on port 5085');
 });

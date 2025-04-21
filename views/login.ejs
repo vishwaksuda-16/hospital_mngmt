@@ -140,7 +140,7 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 5px;
             background-color: rgba(255, 255, 255, 0.1);
-            color: rgb(0, 0, 0);
+            color: black;
             backdrop-filter: blur(5px);
         }
 
@@ -359,7 +359,7 @@
                                 onclick="togglePasswordVisibility('login-password', this)">Show</button>
                         </div>
                     </div>
-                    <button type="submit" class="btn primary-btn">Login</button>
+                    <button type="submit" class="btn primary-btn" id="login-button">Login</button>
 
                     <div class="login-footer">
                         <a href="#" onclick="openForgotPasswordModal()">Forgot Password?</a>
@@ -371,20 +371,19 @@
 
         
         <div id="forgot-password-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-modal" onclick="closeForgotPasswordModal()">&times;</span>
-                <h2 style="margin-bottom: 20px;">Reset Password</h2>
-                <form id="forgot-password-form">
-                    <div class="form-group">
-                        <label for="reset-username">Username</label>
-                        <input type="text" id="reset-username" name="userName" placeholder="Enter your username"
-                            required>
-                    </div>
-                    <p style="margin: 15px 0; font-size: 14px;">We'll send you instructions to reset your password.</p>
-                    <button type="submit" class="btn primary-btn">Submit</button>
-                </form>
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeForgotPasswordModal()">&times;</span>
+        <h2 style="margin-bottom: 20px;">Reset Password</h2>
+        <form id="forgot-password-form" action="/forgot-password" method="post">
+            <div class="form-group">
+                <label for="reset-email">Email</label>
+                <input type="email" id="reset-email" name="email" placeholder="Enter your Email" required>
             </div>
-        </div>
+            <p style="margin: 15px 0; font-size: 14px;">We'll send you instructions to reset your password.</p>
+            <button type="submit" class="btn primary-btn">Submit</button>
+        </form>
+    </div>
+</div>
 
         <footer>
             <div class="footer-content">
@@ -407,44 +406,72 @@
         </footer>
     </div>
 
-    <script>
-        <% if (typeof error !== 'undefined') { %>
-            alert("Invalid username or password");
-        <% } %>
+<script>
+    // Initialize login attempts counter in session storage if it doesn't exist
+    if (!sessionStorage.getItem('loginAttempts')) {
+        sessionStorage.setItem('loginAttempts', '0');
+    }
 
-        function togglePasswordVisibility(inputId, button) {
-            const passwordInput = document.getElementById(inputId);
-            if (passwordInput.type === "password") {
-                passwordInput.type = "text";
-                button.textContent = "Hide";
-            } else {
-                passwordInput.type = "password";
-                button.textContent = "Show";
-            }
+    <% if (typeof error !== 'undefined') { %>
+        // Increment login attempts counter when error occurs
+        let loginAttempts = parseInt(sessionStorage.getItem('loginAttempts')) + 1;
+        sessionStorage.setItem('loginAttempts', loginAttempts.toString());
+        
+        // Check if attempts reached the limit
+        if (loginAttempts >= 3) {
+            alert("You have entered an incorrect password 3 times. Please use the 'Forgot Password' option to reset your password or contact support.");
+            // You could also disable the login button for a period of time here
+            document.getElementById('login-button').disabled = true;
+            setTimeout(() => {
+                document.getElementById('login-button').disabled = false;
+                sessionStorage.setItem('loginAttempts', '0'); // Reset counter after timeout
+            }, 60000); // 1 minute timeout
+        } else {
+            alert("Invalid username or password.");
         }
+    <% } else { %>
+        // Reset attempts counter on page load without error
+        sessionStorage.setItem('loginAttempts', '0');
+    <% } %>
+    
+    <% if (typeof passwordReset !== 'undefined' && passwordReset) { %>
+        alert("Your password has been reset successfully. You can now log in with your new password.");
+        // Reset attempts counter after successful password reset
+        sessionStorage.setItem('loginAttempts', '0');
+    <% } %>
 
-        function openForgotPasswordModal() {
-            document.getElementById('forgot-password-modal').style.display = 'flex';
+    function togglePasswordVisibility(inputId, button) {
+        const passwordInput = document.getElementById(inputId);
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            button.textContent = "Hide";
+        } else {
+            passwordInput.type = "password";
+            button.textContent = "Show";
         }
+    }
 
-        function closeForgotPasswordModal() {
-            document.getElementById('forgot-password-modal').style.display = 'none';
+    function openForgotPasswordModal() {
+        document.getElementById('forgot-password-modal').style.display = 'flex';
+    }
+
+    function closeForgotPasswordModal() {
+        document.getElementById('forgot-password-modal').style.display = 'none';
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById('forgot-password-modal');
+        if (event.target === modal) {
+            modal.style.display = "none";
         }
+    }
 
-        window.onclick = function (event) {
-            const modal = document.getElementById('forgot-password-modal');
-            if (event.target === modal) {
-                modal.style.display = "none";
-            }
-        }
-
-        document.getElementById('forgot-password-form').addEventListener('submit', function (e) {
-            e.preventDefault();
-            console.log('Password reset requested');
-            alert('If your username exists in our system, you will receive password reset instructions.');
-            closeForgotPasswordModal();
-        });
-    </script>
+    // Updated form submission handler
+    document.getElementById('forgot-password-form').addEventListener('submit', function (e) {
+        // We're not preventing default anymore, letting the form submit to the server
+        // The server will handle sending emails and response
+    });
+</script>
 </body>
 
 </html>
