@@ -152,7 +152,7 @@ const scheduleAppointmentReminder = (phoneNumber, doctor, specialization, date, 
         const job = schedule.scheduleJob(reminderTime, async function () {
             try {
                 const formattedDateTime = formatAppointmentDateTime(date, time);
-                const message = `Reminder: You have an appointment with Dr. ${doctor} (${specialization}) tomorrow at ${formattedDateTime}. Please arrive 15 minutes early.`;
+                const message = `Reminder: You have an appointment with Dr. ${doctor} (${specialization}) at ${formattedDateTime}. If you wish to reschedule or cancel your appointment, please visit your portal for any changes. Thank you`;
 
                 await sendSMS(phoneNumber, message);
                 console.log(`Reminder sent to ${phoneNumber} for appointment on ${formattedDateTime}`);
