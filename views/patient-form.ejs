@@ -309,21 +309,28 @@
                     <h3 class="section-title">Contact Information</h3>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+                            <label for="phone">Phone Number <span class="required">*</span></label>
+                            <div class="phone-input">
+                                <input type="tel" id="phone" name="phone" pattern="[0-9]{10}"
+                                    placeholder="10-digit mobile number" required
+                                    title="Please enter a valid 10-digit Indian mobile number">
+                                <small class="form-text text-muted">
+                                    Enter 10-digit number without country code or spaces (e.g., 9876543210)
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" placeholder="Enter your email address"
+                                    required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="email">Email Address</label>
-                            <input type="email" id="email" name="email" placeholder="Enter your email address" required>
-                        </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="address">Home Address</label>
-                        <textarea id="address" name="address" rows="3" placeholder="Enter your complete address"
-                            required></textarea>
-                    </div>
-                    <button type="submit" class="btn primary-btn">Complete Registration</button>
+                        <div class="form-group">
+                            <label for="address">Home Address</label>
+                            <textarea id="address" name="address" rows="3" placeholder="Enter your complete address"
+                                required></textarea>
+                        </div>
+                        <button type="submit" class="btn primary-btn">Complete Registration</button>
                 </form>
             </div>
         </main>
@@ -351,6 +358,33 @@
 
     <script>
         document.getElementById('patient-registration-form').addEventListener('submit', function (e) {
+        });
+    </script>
+    <script>
+        // Validate Indian phone number format
+        document.getElementById('phone').addEventListener('input', function (e) {
+            // Remove any non-digit characters
+            let input = this.value.replace(/\D/g, '');
+
+            // Limit to 10 digits
+            if (input.length > 10) {
+                input = input.substring(0, 10);
+            }
+
+            // Update input value
+            this.value = input;
+        });
+
+        // Validate form before submission
+        document.querySelector('form').addEventListener('submit', function (e) {
+            const phoneInput = document.getElementById('phone');
+            const phoneValue = phoneInput.value.replace(/\D/g, '');
+
+            if (phoneValue.length !== 10) {
+                e.preventDefault();
+                alert('Please enter a valid 10-digit Indian mobile number');
+                phoneInput.focus();
+            }
         });
     </script>
 </body>

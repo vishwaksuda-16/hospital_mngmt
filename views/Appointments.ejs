@@ -10,6 +10,8 @@
 </head>
 
 <body>
+    <div class="toast-container"></div>
+
     <div class="portal-container">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
@@ -236,7 +238,17 @@
         <%- JSON.stringify(doctors) %>
     </script>
     <script src="script/Script.js"></script>
-
+    <script src="/script/smsNotification.js"></script>
+    <script>
+        document.addEventListener(' DOMContentLoaded', function () { // Add appointment ID as data attribute to rows
+            const appointmentRows = document.querySelectorAll('tbody tr'); appointmentRows.forEach(row => {
+                const appointmentId = row.querySelector('.btn-danger').getAttribute('data-id');
+                if (appointmentId) {
+                    row.setAttribute('data-id', appointmentId);
+                }
+            });
+        });
+    </script>
 
 
 

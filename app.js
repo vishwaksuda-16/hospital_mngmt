@@ -1,9 +1,18 @@
+// Update to app.js
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const session = require('express-session');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 const { User, Patient, Doctor, Admin, Appointment, Feedback } = require('./models/user');
+// Import the Twilio utilities
+const twilioUtils = require('./twilioUtils');
+
+// Map to store scheduled reminder jobs by appointment ID
+const reminderJobs = new Map();
 
 mongoose.connect('mongodb://localhost:27017/Hospital', {
     useNewUrlParser: true,
@@ -14,7 +23,49 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", () => {
     console.log("Database connected");
+    // Load existing appointments and schedule reminders for them
+    scheduleExistingAppointmentReminders();
 });
+
+// Function to schedule reminders for all existing appointments
+async function scheduleExistingAppointmentReminders() {
+    try {
+        const futureAppointments = await Appointment.find({
+            date: { $gte: new Date() }
+        }).populate({
+            path: 'userID',
+            model: 'User'
+        });
+
+        console.log(`Found ${futureAppointments.length} future appointments to schedule reminders for.`);
+
+        for (const appointment of futureAppointments) {
+            try {
+                // Get patient details for phone number
+                const patient = await Patient.findOne({ userID: appointment.userID });
+
+                if (patient && patient.contactDetails && patient.contactDetails.phone) {
+                    const job = twilioUtils.scheduleAppointmentReminder(
+                        patient.contactDetails.phone,
+                        appointment.doctor,
+                        appointment.specialization,
+                        appointment.date,
+                        appointment.time
+                    );
+
+                    if (job) {
+                        reminderJobs.set(appointment._id.toString(), job);
+                        console.log(`Scheduled reminder for appointment ${appointment._id}`);
+                    }
+                }
+            } catch (err) {
+                console.error(`Error scheduling reminder for appointment ${appointment._id}:`, err);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading appointments for reminders:', error);
+    }
+}
 
 const app = express();
 app.use(express.json());
@@ -31,6 +82,125 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Existing routes...
+// [Keep all your existing routes]
+
+// Update the appointments POST route to include SMS notifications
+app.post('/appointments', async (req, res) => {
+    const userId = req.session.userId;
+
+    if (!userId) {
+        return res.redirect('/login');
+    }
+
+    try {
+        let appointment;
+
+        if (req.body.appointmentId) {
+            // Update existing appointment
+            const { appointmentId, date, time } = req.body;
+            await Appointment.findByIdAndUpdate(appointmentId, { date, time });
+            appointment = await Appointment.findById(appointmentId);
+            console.log(`Updated appointment ${appointmentId}`);
+
+            // Cancel any existing reminder job
+            if (reminderJobs.has(appointmentId)) {
+                reminderJobs.get(appointmentId).cancel();
+                reminderJobs.delete(appointmentId);
+            }
+        } else {
+            // Create new appointment
+            console.log('New appointment data:', req.body);
+            const { doctor, specialization, date, time } = req.body;
+            appointment = new Appointment({
+                userID: userId,
+                doctor,
+                specialization,
+                date,
+                time
+            });
+            await appointment.save();
+            console.log(`Created new appointment ${appointment._id}`);
+        }
+
+        const patient = await Patient.findOne({ userID: userId });
+
+        if (patient && patient.contactDetails && patient.contactDetails.phone) {
+            // Send confirmation SMS
+            try {
+                await twilioUtils.sendAppointmentConfirmation(
+                    patient.contactDetails.phone,
+                    appointment.doctor,
+                    appointment.specialization,
+                    appointment.date,
+                    appointment.time
+                );
+                console.log(`Confirmation SMS sent to ${patient.contactDetails.phone}`);
+                console.log('appointment.date:', appointment.date);
+                console.log('appointment.time:', appointment.time);
+
+                // Schedule appointment reminder (1 hour before)
+                const job = twilioUtils.scheduleAppointmentReminder(
+                    patient.contactDetails.phone,
+                    appointment.doctor,
+                    appointment.specialization,
+                    appointment.date,
+                    appointment.time
+                );
+
+                if (job) {
+                    reminderJobs.set(appointment._id.toString(), job);
+                    console.log(`Scheduled reminder for appointment ${appointment._id}`);
+                    // Redirect with success parameters
+                    return res.redirect('/appointments?sms=sent&reminder=scheduled');
+                } else {
+                    console.log('Could not schedule reminder job');
+                    return res.redirect('/appointments?sms=sent&reminder=failed');
+                }
+            } catch (smsError) {
+                console.error('Error sending SMS:', smsError);
+                // Continue even if SMS fails, but redirect with error parameter
+                return res.redirect('/appointments?sms_error=true');
+            }
+        } else {
+            console.log('Patient phone not found, SMS not sent');
+            // Redirect without SMS notification
+            return res.redirect('/appointments?phone=missing');
+        }
+    } catch (error) {
+        console.error('Error processing appointment:', error);
+        res.status(500).send('Failed to process appointment');
+    }
+});
+
+// Update the delete appointment route to cancel scheduled reminders
+app.delete('/appointments/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).send('Invalid appointment ID');
+        }
+
+        // Cancel any scheduled reminder
+        if (reminderJobs.has(id)) {
+            reminderJobs.get(id).cancel();
+            reminderJobs.delete(id);
+            console.log(`Cancelled reminder for appointment ${id}`);
+        }
+
+        const deletedAppointment = await Appointment.findByIdAndDelete(id);
+
+        if (!deletedAppointment) {
+            return res.status(404).send('Appointment not found');
+        }
+
+        res.status(200).send({ message: 'Appointment deleted' });
+    } catch (error) {
+        console.error('Error deleting appointment:', error);
+        res.status(500).send('Server error');
+    }
+});
 app.get('/home', (req, res) => {
     res.render('home');
 });
@@ -46,6 +216,39 @@ app.get('/services', (req, res) => {
 app.get('/doctorinfo', (req, res) => {
     res.render('doctorinfo');
 })
+app.get('/appointments', async (req, res) => {
+    const userId = req.session.userId;
+
+    if (!userId) {
+        return res.redirect('/login');
+    }
+
+    try {
+        // First find the patient data
+        const patient = await Patient.findOne({ userID: userId }).populate('userID');
+
+        if (!patient) {
+            return res.send('Patient not found');
+        }
+
+        // Then find appointments using userID (not patient or user)
+        const appointments = await Appointment.find({ userID: userId });
+        const doctors = await Doctor.find(); // Fetch all doctors
+
+        // Extract unique specialities
+        const specialities = [...new Set(doctors.map(doc => doc.specialization))];
+
+        res.render('Appointments', {
+            user: patient,
+            doctors,
+            specialities,
+            appointments
+        });
+    } catch (err) {
+        console.error('Error fetching appointments:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 app.get('/feedback', async (req, res) => {
     try {
@@ -322,100 +525,6 @@ app.get('/profile', async (req, res) => {
     res.render('Profile', { user: patient });
 });
 
-app.post('/appointments', async (req, res) => {
-    const userId = req.session.userId;
-
-    if (!userId) {
-        return res.redirect('/login');
-    }
-
-    try {
-        let appointment;
-
-        if (req.body.appointmentId) {
-            // Update existing appointment
-            const { appointmentId, date, time } = req.body;
-            await Appointment.findByIdAndUpdate(appointmentId, { date, time });
-            appointment = await Appointment.findById(appointmentId);
-            console.log(`Updated appointment ${appointmentId}`);
-        } else {
-            // Create new appointment
-            console.log('New appointment data:', req.body);
-            const { doctor, specialization, date, time } = req.body;
-            appointment = new Appointment({
-                userID: userId,
-                doctor,
-                specialization,
-                date,
-                time
-            });
-            await appointment.save();
-            console.log(`Created new appointment ${appointment._id}`);
-        }
-        res.redirect('/appointments');
-    } catch (error) {
-        console.error('Error processing appointment:', error);
-        res.status(500).send('Failed to process appointment');
-    }
-});
-
-
-app.get('/appointments', async (req, res) => {
-    const userId = req.session.userId;
-
-    if (!userId) {
-        return res.redirect('/login');
-    }
-
-    try {
-        // First find the patient data
-        const patient = await Patient.findOne({ userID: userId }).populate('userID');
-
-        if (!patient) {
-            return res.send('Patient not found');
-        }
-
-        // Then find appointments using userID (not patient or user)
-        const appointments = await Appointment.find({ userID: userId });
-        const doctors = await Doctor.find(); // Fetch all doctors
-
-        // Extract unique specialities
-        const specialities = [...new Set(doctors.map(doc => doc.specialization))];
-
-        res.render('Appointments', {
-            user: patient,
-            doctors,
-            specialities,
-            appointments
-        });
-    } catch (err) {
-        console.error('Error fetching appointments:', err);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-
-app.delete('/appointments/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        if (!ObjectId.isValid(id)) {
-            return res.status(400).send('Invalid appointment ID');
-        }
-
-        const deletedAppointment = await Appointment.findByIdAndDelete(id);
-
-        if (!deletedAppointment) {
-            return res.status(404).send('Appointment not found');
-        }
-
-        res.status(200).send({ message: 'Appointment deleted' });
-    } catch (error) {
-        console.error('Error deleting appointment:', error);
-        res.status(500).send('Server error');
-    }
-});
-
 app.get('/patient-feedback', async (req, res) => {
     const userId = req.session.userId;
 
@@ -530,9 +639,6 @@ app.post('/api/user/password', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
-
-const crypto = require('crypto'); // Node.js built-in crypto module
-const nodemailer = require('nodemailer'); // You'll need to install this: npm install nodemailer
 
 // Set up Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -685,7 +791,6 @@ app.post('/reset-password/:token', async (req, res) => {
         res.status(500).send('An error occurred. Please try again later.');
     }
 });
-
 app.listen(5085, () => {
     console.log('Serving on port 5085');
 });

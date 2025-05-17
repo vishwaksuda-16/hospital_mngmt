@@ -917,3 +917,130 @@ textarea {
     background-color: #6c757d;
     color: white;
 }
+
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 9999;
+}
+
+.toast {
+    width: 350px;
+    background: #fff;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    border-left: 6px solid #4caf50;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 1;
+    transition: all 0.5s ease;
+}
+
+.toast.error {
+    border-left-color: #f44336;
+}
+
+.toast.hide {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.toast .toast-content {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+}
+
+.toast-content i {
+    font-size: 24px;
+    color: #4caf50;
+    margin-right: 12px;
+}
+
+.toast.error .toast-content i {
+    color: #f44336;
+}
+
+.toast .message {
+    display: flex;
+    flex-direction: column;
+}
+
+.toast .message span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.toast .progress {
+    position: relative;
+    height: 3px;
+    width: 100%;
+    background: #ddd;
+}
+
+.toast .progress:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #4caf50;
+    animation: progress 5s linear forwards;
+}
+
+.toast.error .progress:before {
+    background-color: #f44336;
+}
+
+@keyframes progress {
+    100% {
+        right: 100%;
+    }
+}
+
+/* SMS Notification Badge */
+.sms-notification {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.5rem;
+}
+
+.notification-badge {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.notification-badge i {
+    font-size: 0.875rem;
+}
+
+.notification-info {
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .toast-container {
+        width: calc(100% - 2rem);
+        right: 0;
+        margin: 0 1rem;
+    }
+
+    .toast {
+        width: 100%;
+    }
+}
