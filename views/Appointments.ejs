@@ -112,10 +112,10 @@
                                         <option value="10:00 am">10:00 AM</option>
                                         <option value="11:00 am">11:00 AM</option>
                                         <option value="12:00 pm">12:00 PM</option>
-                                        <option value="13:00 pm">13:00 PM</option>
-                                        <option value="14:00 pm">14:00 PM</option>
-                                        <option value="15:00 pm">15:00 PM</option>
-                                        <option value="16:00 pm">16:00 PM</option>
+                                        <option value="13:00 pm">1:00 PM</option>
+                                        <option value="14:00 pm">2:00 PM</option>
+                                        <option value="15:00 pm">3:00 PM</option>
+                                        <option value="16:00 pm">4:00 PM</option>
                                     </select>
                                 </div>
                             </div>
@@ -139,7 +139,7 @@
                             <thead>
                                 <tr>
                                     <th>Doctor</th>
-                                    <th>specialization</th>
+                                    <th>Specialization</th>
                                     <th>Date</th>
                                     <th>Time</th>
                                     <th>Actions</th>
@@ -147,7 +147,7 @@
                             </thead>
                             <tbody>
                                 <% appointments.forEach(appointment => { %>
-                                    <tr>
+                                    <tr data-id="<%= appointment._id %>">
                                         <td><%= appointment.doctor %></td>
                                         <td><%= appointment.specialization %></td>
                                         <td><%= new Date(appointment.date).toDateString() %></td>
@@ -161,29 +161,17 @@
                                                 data-time="<%= appointment.time %>">
                                                 <i class="fas fa-calendar-alt"></i> Reschedule
                                             </button>
-                                                <div>
-                                                    
-                                                    <button class="btn-danger" data-id="<%= appointment._id %>">Delete</button>
-                                                    
-                                                    <div id="deleteModal" class="modal-overlay">
-                                                        <div class="modal-box">
-                                                            <p>Are you sure you want to delete this appointment?</p>
-                                                            <div class="modal-buttons">
-                                                                <button id="confirmDeleteBtn" class="btn btn-danger" data-id="<%= appointment._id %>">Yes, Delete</button>
-                                                                <button id="cancelDeleteBtn" class="btn btn-secondary">Cancel</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>                                        
-                            </form>
-                            </td>
-                            </tr>
-                            <% }) %>
-                                </tbody>
-                                </table>
-                                <% } else { %>
-                                    <p>No appointments booked yet.</p>
-                                    <% } %>
+                                            <button class="btn-danger" data-id="<%= appointment._id %>">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    <% } else { %>
+                        <p>No appointments booked yet.</p>
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -204,7 +192,7 @@
                         <input type="text" id="rescheduleDoctor" name="doctor" readonly>
                     </div>
                     <div class="form-group">
-                        <label for="reschedulespecialization">specialization</label>
+                        <label for="reschedulespecialization">Specialization</label>
                         <input type="text" id="reschedulespecialization" name="specialization" readonly>
                     </div>
                     <div class="form-group">
@@ -215,14 +203,14 @@
                         <label for="rescheduleTime">New Time</label>
                         <select id="rescheduleTime" name="time" required>
                             <option value="">Select Time</option>
-                                        <option value="09:00 am">9:00 AM</option>
-                                        <option value="10:00 am">10:00 AM</option>
-                                        <option value="11:00 am">11:00 AM</option>
-                                        <option value="12:00 pm">12:00 PM</option>
-                                        <option value="13:00 pm">13:00 PM</option>
-                                        <option value="14:00 pm">14:00 PM</option>
-                                        <option value="15:00 pm">15:00 PM</option>
-                                        <option value="16:00 pm">16:00 PM</option>
+                            <option value="09:00 am">9:00 AM</option>
+                            <option value="10:00 am">10:00 AM</option>
+                            <option value="11:00 am">11:00 AM</option>
+                            <option value="12:00 pm">12:00 PM</option>
+                            <option value="13:00 pm">1:00 PM</option>
+                            <option value="14:00 pm">2:00 PM</option>
+                            <option value="15:00 pm">3:00 PM</option>
+                            <option value="16:00 pm">4:00 PM</option>
                         </select>
                     </div>
                     <div class="form-actions modal-actions">
@@ -234,24 +222,22 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-box">
+            <p>Are you sure you want to delete this appointment?</p>
+            <div class="modal-buttons">
+                <button id="confirmDeleteBtn" class="btn btn-primary">Yes, Delete</button>
+                <button id="cancelDeleteBtn" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script id="doctor-data" type="application/json">
         <%- JSON.stringify(doctors) %>
     </script>
-    <script src="script/Script.js"></script>
+    <script src="/script/Script.js"></script>
     <script src="/script/smsNotification.js"></script>
-    <script>
-        document.addEventListener(' DOMContentLoaded', function () { // Add appointment ID as data attribute to rows
-            const appointmentRows = document.querySelectorAll('tbody tr'); appointmentRows.forEach(row => {
-                const appointmentId = row.querySelector('.btn-danger').getAttribute('data-id');
-                if (appointmentId) {
-                    row.setAttribute('data-id', appointmentId);
-                }
-            });
-        });
-    </script>
-
-
-
 </body>
 
 </html>

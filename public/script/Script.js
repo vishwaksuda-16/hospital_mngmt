@@ -419,3 +419,28 @@ function initializeAppointmentFunctions() {
         }
     }
 }
+
+// Function to show toast notifications
+function showToast(message, type = 'info') {
+    const toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+
+    toastContainer.appendChild(toast);
+
+    // Show the toast
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+
+    // Hide and remove the toast after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toastContainer.removeChild(toast);
+        }, 300);
+    }, 3000);
+}

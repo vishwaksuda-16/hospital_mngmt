@@ -95,9 +95,17 @@ app.post('/appointments', async (req, res) => {
         if (req.body.appointmentId) {
             // Update existing appointment
             const { appointmentId, date, time } = req.body;
-            await Appointment.findByIdAndUpdate(appointmentId, { date, time });
+
+            // Ensure date is in YYYY-MM-DD format
+            const formattedDate = new Date(date).toISOString().split('T')[0];
+
+            await Appointment.findByIdAndUpdate(appointmentId, {
+                date: formattedDate,
+                time
+            });
+
             appointment = await Appointment.findById(appointmentId);
-            console.log(`Updated appointment ${appointmentId}`);
+            console.log(`Updated appointment ${appointmentId} with date ${formattedDate}`);
 
             // Cancel any existing reminder job
             if (reminderJobs.has(appointmentId)) {
@@ -108,16 +116,21 @@ app.post('/appointments', async (req, res) => {
             // Create new appointment
             console.log('New appointment data:', req.body);
             const { doctor, specialization, date, time, status } = req.body;
+
+            // Ensure date is in YYYY-MM-DD format
+            const formattedDate = new Date(date).toISOString().split('T')[0];
+
             appointment = new Appointment({
                 userID: userId,
-                doctor,
+                doctor,  // This should match exactly with the doctor's name
                 specialization,
-                date,
+                date: formattedDate,
                 time,
-                status
+                status: status || 'Pending'
             });
+
             await appointment.save();
-            console.log(`Created new appointment ${appointment._id}`);
+            console.log(`Created new appointment ${appointment._id} with date ${formattedDate}`);
         }
 
         const patient = await Patient.findOne({ userID: userId });
@@ -157,12 +170,12 @@ app.post('/appointments', async (req, res) => {
             } catch (smsError) {
                 console.error('Error sending SMS:', smsError);
                 // Continue even if SMS fails, but redirect with error parameter
-                return res.redirect('/appointments?sms_error=true');
+                return res.redirect('/appointments');
             }
         } else {
             console.log('Patient phone not found, SMS not sent');
             // Redirect without SMS notification
-            return res.redirect('/appointments?phone=missing');
+            return res.redirect('/appointments');
         }
     } catch (error) {
         console.error('Error processing appointment:', error);
@@ -783,33 +796,40 @@ app.get('/doctor/dashboard', async (req, res) => {
             return res.redirect('/login');
         }
 
-        // Get today's date
+        // Get today's date in YYYY-MM-DD format
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
 
+        console.log('Doctor Name:', doctor.name);
+        console.log('Looking for appointments on date:', todayStr);
+
         // Get all appointments for this doctor for today
         const todayAppointments = await Appointment.find({
-            doctor: doctor.name,
-            date: todayStr,
-            status: { $in: ['Pending', 'Confirmed'] }
-        }).populate({
-            path: 'userID',
-            model: 'User'
+            doctor: doctor.name, // This needs to match exactly how it's stored
+            date: todayStr
         });
+
+        console.log('Found appointments:', todayAppointments.length);
 
         // Process appointments to include patient information
         const processedAppointments = [];
         for (const appointment of todayAppointments) {
-            const patient = await Patient.findOne({ userID: appointment.userID });
-            if (patient) {
-                processedAppointments.push({
-                    id: appointment._id,
-                    time: appointment.time,
-                    patientName: patient.name,
-                    patientId: patient._id,
-                    patientAge: calculateAge(patient.dob),
-                    purpose: appointment.specialization
-                });
+            try {
+                const patient = await Patient.findOne({ userID: appointment.userID });
+                if (patient) {
+                    processedAppointments.push({
+                        id: appointment._id,
+                        time: appointment.time,
+                        patientName: patient.name,
+                        patientId: patient._id,
+                        purpose: appointment.specialization,
+                        status: appointment.status
+                    });
+                } else {
+                    console.log(`No patient found for userID: ${appointment.userID}`);
+                }
+            } catch (err) {
+                console.error(`Error processing appointment ${appointment._id}:`, err);
             }
         }
 
@@ -819,39 +839,43 @@ app.get('/doctor/dashboard', async (req, res) => {
             status: 'Active'
         });
 
-        // Count upcoming consultations for the week
+        // Count upcoming consultations for the week - using string comparison since date is stored as string
         const nextWeek = new Date();
         nextWeek.setDate(today.getDate() + 7);
         const nextWeekStr = nextWeek.toISOString().split('T')[0];
 
         const upcomingConsultations = await Appointment.countDocuments({
             doctor: doctor.name,
-            date: { $gte: todayStr, $lte: nextWeekStr },
-            status: { $in: ['Pending', 'Confirmed'] }
+            date: { $gte: todayStr, $lte: nextWeekStr }
         });
 
-        // Get appointment dates for the calendar
-        const currentMonth = today.getMonth();
+        // Get appointment dates for the calendar - modified to work with string dates
+        const currentMonth = today.getMonth() + 1; // JavaScript months are 0-based
         const currentYear = today.getFullYear();
-        const startDate = new Date(currentYear, currentMonth, 1);
-        const endDate = new Date(currentYear, currentMonth + 1, 0);
+
+        // Create date range strings for the current month
+        const startDateStr = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`;
+        const lastDay = new Date(currentYear, currentMonth, 0).getDate();
+        const endDateStr = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${lastDay}`;
+
+        console.log(`Looking for month appointments between ${startDateStr} and ${endDateStr}`);
 
         const monthAppointments = await Appointment.find({
             doctor: doctor.name,
-            date: {
-                $gte: startDate.toISOString().split('T')[0],
-                $lte: endDate.toISOString().split('T')[0]
-            }
+            date: { $gte: startDateStr, $lte: endDateStr }
         });
+
+        console.log(`Found ${monthAppointments.length} appointments for this month`);
 
         // Extract day of month from appointment dates
         const appointmentDates = monthAppointments.map(app => {
+            // Parse the date string (assuming YYYY-MM-DD format)
             const dateParts = app.date.split('-');
             return parseInt(dateParts[2], 10); // Extract day from YYYY-MM-DD
         });
 
         // Find the URL for the background image
-        const backgroundImageUrl = '/images/hospital-bg.jpg'; // Update with your actual image path
+        const backgroundImageUrl = '/images/hospital-bg.jpg';
 
         res.render('doctorDashboard', {
             doctor,
@@ -867,17 +891,7 @@ app.get('/doctor/dashboard', async (req, res) => {
     }
 });
 
-// Helper function to calculate age
-function calculateAge(dob) {
-    const birthDate = new Date(dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
-    return age;
-}
+
 
 // Route for doctor appointments page
 app.get('/doctor/calendar', async (req, res) => {
@@ -895,26 +909,36 @@ app.get('/doctor/calendar', async (req, res) => {
             return res.redirect('/login');
         }
 
+        console.log('Doctor Name for calendar:', doctor.name);
+
         // Get all appointments for this doctor
         const appointments = await Appointment.find({
             doctor: doctor.name
         }).sort({ date: 1, time: 1 });
 
+        console.log(`Found ${appointments.length} total appointments for doctor calendar`);
+
         // Process appointments to include patient information
         const processedAppointments = [];
         for (const appointment of appointments) {
-            const patient = await Patient.findOne({ userID: appointment.userID });
-            if (patient) {
-                processedAppointments.push({
-                    id: appointment._id,
-                    date: appointment.date,
-                    time: appointment.time,
-                    patientName: patient.name,
-                    patientId: patient._id,
-                    patientAge: calculateAge(patient.dob),
-                    purpose: appointment.specialization,
-                    status: appointment.status
-                });
+            try {
+                const patient = await Patient.findOne({ userID: appointment.userID });
+                if (patient) {
+                    processedAppointments.push({
+                        id: appointment._id,
+                        date: appointment.date,
+                        time: appointment.time,
+                        patientName: patient.name,
+                        patientId: patient._id,
+                        patientAge: calculateAge(patient.dob),
+                        purpose: appointment.specialization,
+                        status: appointment.status
+                    });
+                } else {
+                    console.log(`No patient found for userID: ${appointment.userID}`);
+                }
+            } catch (err) {
+                console.error(`Error processing appointment ${appointment._id} for calendar:`, err);
             }
         }
 
@@ -936,6 +960,7 @@ app.get('/doctor/calendar', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
 
 app.listen(5085, () => {
     console.log('Serving on port 5085');
