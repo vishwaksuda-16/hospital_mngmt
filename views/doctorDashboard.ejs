@@ -1,893 +1,816 @@
-l lang="en">
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Portal - Hospital Management System</title>
+    <title>HMS Doctor Portal - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/styles/Styles.css">
     <style>
-        /* Reset and Base Styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-
-        body {
-            min-height: 100vh;
-            position: relative;
-            background-color: #f0f5ff;
-        }
-
-        /* Background Image */
-        .background-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            background-image: url('<%= backgroundImageUrl %>');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-
-        .background-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
-            /* Light overlay */
-            z-index: -1;
-        }
-
-        /* Main Container */
-        .main-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 250px;
-            background-color: #2c7dfa;
-            color: white;
-            padding: 20px 0;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            height: 100%;
-            z-index: 100;
-        }
-
-        .doctor-profile {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .doctor-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: #fff;
-            margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            color: #2c7dfa;
-        }
-
-        .doctor-name {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .doctor-specialty {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 0 15px;
-            flex-grow: 1;
-        }
-
-        .sidebar-menu li {
-            margin-bottom: 5px;
-        }
-
-        .sidebar-menu a {
-            display: block;
-            padding: 12px 15px;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .sidebar-menu a:hover,
-        .sidebar-menu a.active {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .sidebar-menu a i {
-            margin-right: 10px;
-        }
-
-        .logout {
-            padding: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .logout-btn {
-            display: block;
-            padding: 12px;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .logout-btn:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Content Area */
-        .content-area {
-            flex: 1;
-            margin-left: 250px;
-            padding: 20px;
-        }
-
-        .welcome-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-        }
-
-        .welcome-text h1 {
-            font-size: 24px;
-            color: #333;
-        }
-
-        .welcome-text p {
-            color: #777;
-        }
-
-        .date-time {
-            text-align: right;
-            color: #777;
-        }
-
-        .widgets-container {
-            display: grid;
+        /* Additional styling to enhance the dashboard */
+        .content-grid {
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
-            margin-bottom: 20px;
         }
 
-        .widget {
-            background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        /* Enhanced card styling */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            border-top: 4px solid #3498db;
         }
 
-        .widget-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Different border colors for different cards */
+        .card.news-card {
+            border-top-color: #3498db;
+        }
+
+        .card.calculator-card {
+            border-top-color: #9b59b6;
+        }
+
+        .card.resources-card {
+            border-top-color: #2ecc71;
+        }
+
+        .card.wellness-card {
+            border-top-color: #e74c3c;
+        }
+
+        /* Improved card header with gradient background */
+        .card-header {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        /* Enhanced news items */
+        .news-item {
+            padding: 16px;
+            border-radius: 8px;
             margin-bottom: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            transition: transform 0.2s ease;
         }
 
-        .widget-title {
-            font-size: 18px;
-            color: #333;
+        .news-item:hover {
+            transform: translateX(5px);
+            background-color: #edf2f7;
         }
 
-        .widget-action {
-            color: #2c7dfa;
-            text-decoration: none;
-            font-size: 14px;
+        .news-item h3 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
         }
 
-        /* Appointments Section */
-        .appointments-section {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-        }
-
-        /* Calendar Styles */
-        .calendar-widget {
-            background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .calendar-header {
+        .news-item .news-footer {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .calendar-title {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .calendar-nav {
-            display: flex;
-            gap: 10px;
-        }
-
-        .calendar-nav-btn {
-            background-color: #f0f0f0;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .calendar-nav-btn:hover {
-            background-color: #2c7dfa;
-            color: white;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-        }
-
-        .calendar-weekday {
-            text-align: center;
-            font-weight: bold;
-            color: #777;
-            padding: 5px;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1/1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.3s;
-        }
-
-        .calendar-day:hover {
-            background-color: #f0f5ff;
-        }
-
-        .calendar-day.has-appointments {
-            border: 2px solid #2c7dfa;
-        }
-
-        .calendar-day.today {
-            background-color: #2c7dfa;
-            color: white;
-        }
-
-        .calendar-day.has-appointments::after {
-            content: '';
-            position: absolute;
-            bottom: 5px;
-            width: 5px;
-            height: 5px;
-            background-color: #2c7dfa;
-            border-radius: 50%;
-        }
-
-        /* Appointments Details */
-        .appointments-details {
-            background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .appointments-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .appointments-title {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .appointments-date {
-            color: #777;
-        }
-
-        .appointments-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .appointment-card {
-            padding: 15px;
-            border-radius: 10px;
-            background-color: #f9fafc;
-            margin-bottom: 15px;
-            border-left: 4px solid #2c7dfa;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .appointment-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .appointment-time {
-            display: inline-block;
-            padding: 5px 10px;
-            background-color: #e6f0ff;
-            color: #2c7dfa;
-            border-radius: 20px;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .appointment-patient {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .appointment-details {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: #777;
-            font-size: 14px;
-        }
-
-        .appointment-actions {
-            display: flex;
-            gap: 10px;
             margin-top: 10px;
+            font-size: 0.85rem;
+            color: #7f8c8d;
         }
 
-        .action-btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        .complete-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .complete-btn:hover {
-            background-color: #3d8b40;
-        }
-
-        .reschedule-btn {
-            background-color: #f0f0f0;
-            color: #777;
-        }
-
-        .reschedule-btn:hover {
-            background-color: #e0e0e0;
-        }
-
-        /* No Appointments Message */
-        .no-appointments {
-            text-align: center;
-            padding: 40px 0;
-            color: #777;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .appointments-section {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 70px;
-                overflow: hidden;
-            }
-
-            .doctor-profile,
-            .doctor-name,
-            .doctor-specialty {
-                display: none;
-            }
-
-            .sidebar-menu a span {
-                display: none;
-            }
-
-            .sidebar-menu a i {
-                margin-right: 0;
-                font-size: 20px;
-            }
-
-            .content-area {
-                margin-left: 70px;
-            }
-
-            .logout-btn span {
-                display: none;
-            }
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.active {
+        /* Improved calculator tabs */
+        .calculator-tabs {
             display: flex;
+            overflow-x: auto;
+            background-color: #f1f2f6;
+            border-radius: 8px;
+            margin-bottom: 15px;
         }
 
-        .modal-content {
-            background-color: white;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .modal-close {
+        .calculator-tab {
+            padding: 10px 15px;
             background: none;
             border: none;
-            font-size: 20px;
             cursor: pointer;
-            color: #777;
+            color: #576574;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
-        .modal-body {
-            padding: 20px;
+        .calculator-tab:hover {
+            background-color: rgba(155, 89, 182, 0.1);
+            color: #9b59b6;
+        }
+
+        .calculator-tab.active {
+            background-color: #9b59b6;
+            color: white;
+            border-radius: 6px;
+        }
+
+        /* Compact calculator layout */
+        .calculator-content {
+            display: none;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .calculator-content.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .calculator-content h3 {
+            grid-column: 1 / -1;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1rem;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        .form-control {
+        .calculator-content input[type="number"] {
             width: 100%;
-            padding: 10px;
+            padding: 8px 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
         }
 
-        .form-control:focus {
-            outline: none;
-            border-color: #2c7dfa;
+        .calculator-content button {
+            grid-column: 1 / -1;
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
-        textarea.form-control {
-            min-height: 120px;
-            resize: vertical;
+        .calculator-content button:hover {
+            background-color: #8e44ad;
         }
 
-        .modal-footer {
-            padding: 15px 20px;
-            border-top: 1px solid #f0f0f0;
-            text-align: right;
+        .result-display {
+            grid-column: 1 / -1;
+            text-align: center;
+            background-color: #edf2f7;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Improved wellness tip */
+        .wellness-tip {
             display: flex;
-            justify-content: flex-end;
+            background-color: #fff0f0;
+            padding: 15px;
+            border-radius: 8px;
+            align-items: center;
+        }
+
+        .wellness-icon {
+            background-color: #e74c3c;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .wellness-content h3 {
+            color: #c0392b;
+            margin-bottom: 5px;
+        }
+
+        /* Enhanced resource grid */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 10px;
         }
 
-        .modal-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-
-        .btn-secondary {
-            background-color: #f0f0f0;
+        .resource-item {
+            text-align: center;
+            padding: 15px 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
             color: #333;
+            height: 100%;
         }
 
-        .btn-secondary:hover {
-            background-color: #ddd;
+        .resource-item:hover {
+            background-color: #2ecc71;
+            color: white;
+            transform: translateY(-3px);
         }
 
-        .btn-primary {
-            background-color: #2c7dfa;
+        .resource-icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: #2ecc71;
+        }
+
+        .resource-item:hover .resource-icon {
             color: white;
         }
 
+        .resource-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .resource-desc {
+            font-size: 0.75rem;
+            color: #7f8c8d;
+        }
+
+        .resource-item:hover .resource-desc {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Card footer styling */
+        .card-footer {
+            background-color: #f8f9fa;
+            padding: 12px 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            text-align: right;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
         .btn-primary:hover {
-            background-color: #1c6dea;
+            background-color: #2980b9;
+        }
+
+        /* Radio button styling */
+        .radio-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .radio-group input[type="radio"] {
+            margin-right: 5px;
         }
     </style>
 </head>
 
 <body>
-    <!-- Background container with overlay -->
-    <div class="background-container"></div>
-    <div class="background-overlay"></div>
-
-    <div class="main-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="doctor-profile">
-                <div class="doctor-avatar">
-                    <%= doctor.name.charAt(0) %>
+    <div class="portal-container">
+        <!-- Sidebar (unchanged) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-hospital"></i> <span>HMS</span></h2>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    <%= doctor.name[4] %>
                 </div>
-                <div class="doctor-name">Dr. <%= doctor.name %>
-                </div>
-                <div class="doctor-specialty">
-                    <%= doctor.specialty %>
+                <div class="user-details">
+                    <div class="user-name">
+                        <%= doctor.name %>
+                    </div>
+                    <div class="user-id">
+                        <%= doctor.specialty %>
+                    </div>
                 </div>
             </div>
-            <ul class="sidebar-menu">
-                <li><a href="/doctor/dashboard" class="active"><i>📊</i> <span>Dashboard</span></a></li>
-                <li><a href="/doctor/appointments"><i>📅</i> <span>Appointments</span></a></li>
-                <li><a href="/doctor/patients"><i>👨‍👩‍👧‍👦</i> <span>My Patients</span></a></li>
-                <li><a href="/doctor/schedule"><i>⏰</i> <span>My Schedule</span></a></li>
-                <li><a href="/doctor/prescriptions"><i>📝</i> <span>Prescriptions</span></a></li>
-                <li><a href="/doctor/billing"><i>💰</i> <span>Billing</span></a></li>
-                <li><a href="/doctor/profile"><i>⚙️</i> <span>Profile</span></a></li>
+            <ul class="nav-links">
+                <li><a href="/doctor/dashboard" class="active"><i class="fas fa-th-large"></i>
+                        <span>Dashboard</span></a></li>
+                <li><a href="/doctor/appointments"><i class="fas fa-calendar-check"></i> <span>Calendar</span></a></li>
+                <li><a href="/doctor/patients"><i class="fas fa-user-injured"></i> <span>Patients</span></a></li>
+                <li><a href="/doctor/billing"><i class="fas fa-file-invoice-dollar"></i> <span>Billing</span></a></li>
             </ul>
-            <div class="logout">
-                <a href="/logout" class="logout-btn"><i>🚪</i> <span>Logout</span></a>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="window.location.href='/home'" aria-label="Logout">
+                    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+                </button>
             </div>
-        </div>
+        </aside>
 
-        <!-- Content Area -->
-        <div class="content-area">
-            <!-- Welcome Bar -->
-            <div class="welcome-bar">
-                <div class="welcome-text">
-                    <h1>Welcome, <%= doctor.name %>
-                    </h1>
-                    <p>Here's your schedule for today</p>
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Topbar (unchanged) -->
+            <div class="topbar">
+                <button id="menu-toggle" class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    <h1>Doctor Dashboard</h1>
                 </div>
-                <div class="date-time">
-                    <div class="current-date">
-                        <%= new Date().toLocaleDateString('en-US', { weekday: 'long' , year: 'numeric' , month: 'long' ,
-                            day: 'numeric' }) %>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Widgets -->
-            <div class="widgets-container">
-                <div class="widget">
-                    <div class="widget-header">
-                        <div class="widget-title">Today's Appointments</div>
-                        <a href="/doctor/appointments" class="widget-action">View All</a>
-                    </div>
-                    <div><strong>
-                            <%= todayAppointments.length %>
-                        </strong> appointments scheduled</div>
-                </div>
-                <div class="widget">
-                    <div class="widget-header">
-                        <div class="widget-title">Pending Reports</div>
-                        <a href="/doctor/reports" class="widget-action">View All</a>
-                    </div>
-                    <div><strong>
-                            <%= pendingReports %>
-                        </strong> reports to complete</div>
-                </div>
-                <div class="widget">
-                    <div class="widget-header">
-                        <div class="widget-title">Upcoming Consultations</div>
-                        <a href="/doctor/consultations" class="widget-action">View All</a>
-                    </div>
-                    <div><strong>
-                            <%= upcomingConsultations %>
-                        </strong> consultations this week</div>
+                <div class="topbar-right">
+                    <button class="notification-btn" aria-label="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <div class="notification-badge">2</div>
+                    </button>
+                    <span>Welcome, Dr.<%= doctor.name.split(' ')[1] || doctor.name %></span>
                 </div>
             </div>
 
-            <!-- Appointments Section -->
-            <div class="appointments-section">
-                <!-- Calendar -->
-                <div class="calendar-widget">
-                    <div class="calendar-header">
-                        <div class="calendar-title">
-                            <%= new Date().toLocaleDateString('en-US', { month: 'long' , year: 'numeric' }) %>
-                        </div>
-                        <div class="calendar-nav">
-                            <button class="calendar-nav-btn prev-month">◀</button>
-                            <button class="calendar-nav-btn next-month">▶</button>
-                        </div>
-                    </div>
-                    <div class="calendar-grid">
-                        <!-- Weekdays -->
-                        <div class="calendar-weekday">Sun</div>
-                        <div class="calendar-weekday">Mon</div>
-                        <div class="calendar-weekday">Tue</div>
-                        <div class="calendar-weekday">Wed</div>
-                        <div class="calendar-weekday">Thu</div>
-                        <div class="calendar-weekday">Fri</div>
-                        <div class="calendar-weekday">Sat</div>
+            <!-- Dashboard Content -->
+            <div class="page-content active">
+                <div class="content-grid">
 
-                        <% /* This is where calendar days would be generated by JavaScript */ %>
-                            <% const today=new Date().getDate(); %>
-                                <% for(let i=1; i <=31; i++) { %>
-                                    <div class="calendar-day <%= i === today ? 'today' : '' %> <%= appointmentDates.includes(i) ? 'has-appointments' : '' %>"
-                                        data-date="<%= i %>">
-                                        <%= i %>
-                                    </div>
-                                    <% } %>
-                    </div>
-                </div>
-
-                <!-- Appointments Details -->
-                <div class="appointments-details">
-                    <div class="appointments-header">
-                        <div class="appointments-title">Upcoming Appointments</div>
-                        <div class="appointments-date">
-                            <%= new Date().toLocaleDateString('en-US', { weekday: 'long' , month: 'long' ,
-                                day: 'numeric' }) %>
-                        </div>
-                    </div>
-
-                    <div class="appointments-list">
-                        <% if (todayAppointments.length===0) { %>
-                            <div class="no-appointments">
-                                <p>No appointments scheduled for today.</p>
+                    <!-- Medical News Updates -->
+                    <div class="card news-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Medical News Updates</h2>
+                            <div class="card-icon" style="background-color: #3498db;">
+                                <i class="fas fa-newspaper"></i>
                             </div>
-                            <% } else { %>
-                                <% todayAppointments.forEach(appointment=> { %>
-                                    <div class="appointment-card" data-id="<%= appointment.id %>">
-                                        <div class="appointment-time">
-                                            <%= appointment.time %>
-                                        </div>
-                                        <div class="appointment-patient">
-                                            <%= appointment.patientName %> - <%= appointment.purpose %>
-                                        </div>
-                                        <div class="appointment-details">
-                                            <span>Age: <%= appointment.patientAge %></span>
-                                            <span>Patient ID: <%= appointment.patientId %></span>
-                                        </div>
-                                        <div class="appointment-actions">
-                                            <button class="action-btn complete-btn"
-                                                data-id="<%= appointment.id %>">Complete Appointment</button>
-                                            <button class="action-btn reschedule-btn"
-                                                data-id="<%= appointment.id %>">Reschedule</button>
-                                        </div>
-                                    </div>
-                                    <% }) %>
-                                        <% } %>
+                        </div>
+                        <div class="card-content" id="medical-news">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-pulse"></i> Loading today' s medical updates... </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-primary" id="refresh-news">
+                        <i class="fas fa-sync"></i> Load Different News
+                    </button>
+                </div>
+            </div>
+
+            <!-- Medical Calculator Tools -->
+            <div class="card calculator-card">
+                <div class="card-header">
+                    <h2 class="card-title">Quick Medical Calculators</h2>
+                    <div class="card-icon" style="background-color: #9b59b6;">
+                        <i class="fas fa-calculator"></i>
                     </div>
+                </div>
+                <div class="card-content">
+                    <div class="calculator-tabs">
+                        <button class="calculator-tab active" data-calc="bmi">BMI</button>
+                        <button class="calculator-tab" data-calc="bsa">BSA</button>
+                        <button class="calculator-tab" data-calc="dosage">Dosage</button>
+                        <button class="calculator-tab" data-calc="egfr">eGFR</button>
+                    </div>
+
+                    <!-- BMI Calculator -->
+                    <div class="calculator-content active" id="bmi-calculator">
+                        <h3>BMI Calculator</h3>
+                        <div class="form-group">
+                            <label for="bmi-weight">Weight (kg)</label>
+                            <input type="number" id="bmi-weight" placeholder="Enter weight" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="bmi-height">Height (cm)</label>
+                            <input type="number" id="bmi-height" placeholder="Enter height" step="0.1">
+                        </div>
+                        <button class="btn btn-primary" id="calculate-bmi">Calculate BMI</button>
+                        <div class="result-display" id="bmi-result">
+                            <!-- Results will appear here -->
+                        </div>
+                    </div>
+
+                    <!-- BSA Calculator -->
+                    <div class="calculator-content" id="bsa-calculator">
+                        <h3>Body Surface Area</h3>
+                        <div class="form-group">
+                            <label for="bsa-weight">Weight (kg)</label>
+                            <input type="number" id="bsa-weight" placeholder="Enter weight" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="bsa-height">Height (cm)</label>
+                            <input type="number" id="bsa-height" placeholder="Enter height" step="0.1">
+                        </div>
+                        <button class="btn btn-primary" id="calculate-bsa">Calculate BSA</button>
+                        <div class="result-display" id="bsa-result">
+                            <!-- Results will appear here -->
+                        </div>
+                    </div>
+
+                    <!-- Dosage Calculator -->
+                    <div class="calculator-content" id="dosage-calculator">
+                        <h3>Medication Dosage</h3>
+                        <div class="form-group">
+                            <label for="dosage-weight">Patient Weight (kg)</label>
+                            <input type="number" id="dosage-weight" placeholder="Enter patient weight" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="dosage-rate">Dosage (mg/kg)</label>
+                            <input type="number" id="dosage-rate" placeholder="Enter dosage rate" step="0.01">
+                        </div>
+                        <button class="btn btn-primary" id="calculate-dosage">Calculate Dosage</button>
+                        <div class="result-display" id="dosage-result">
+                            <!-- Results will appear here -->
+                        </div>
+                    </div>
+
+                    <!-- eGFR Calculator -->
+                    <div class="calculator-content" id="egfr-calculator">
+                        <h3>eGFR Calculator (CKD-EPI)</h3>
+                        <div class="form-group">
+                            <label for="egfr-creatinine">Serum Creatinine (mg/dL)</label>
+                            <input type="number" id="egfr-creatinine" placeholder="Enter creatinine level" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="egfr-age">Age (years)</label>
+                            <input type="number" id="egfr-age" placeholder="Enter age">
+                        </div>
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <div class="radio-group">
+                                <input type="radio" id="egfr-male" name="egfr-gender" value="male" checked>
+                                <label for="egfr-male">Male</label>
+                                <input type="radio" id="egfr-female" name="egfr-gender" value="female">
+                                <label for="egfr-female">Female</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Ethnicity</label>
+                            <div class="radio-group">
+                                <input type="radio" id="egfr-black" name="egfr-race" value="black">
+                                <label for="egfr-black">Black</label>
+                                <input type="radio" id="egfr-non-black" name="egfr-race" value="non-black" checked>
+                                <label for="egfr-non-black">Non-Black</label>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="calculate-egfr">Calculate eGFR</button>
+                        <div class="result-display" id="egfr-result">
+                            <!-- Results will appear here -->
+                        </div>
+                    </div>
+                </div>
+                <!-- To-Do Notes -->
+                <div class="card notes-card" style="border-top-color: #f39c12;">
+                    <div class="card-header">
+                        <h2 class="card-title">Quick Notes</h2>
+                        <div class="card-icon" style="background-color: #f39c12;">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <textarea id="doctor-notes" placeholder="Write reminders, notes or follow-ups here..." rows="6"
+                            style="width: 100%; padding: 10px; font-size: 0.9rem; border-radius: 8px; border: 1px solid #ccc; resize: vertical;"></textarea>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-sm btn-primary"
+                            onclick="localStorage.setItem('doctorNotes', document.getElementById('doctor-notes').value)">
+                            <i class="fas fa-save"></i> Save Notes
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Healthcare Resources -->
+            <div class="card resources-card">
+                <div class="card-header">
+                    <h2 class="card-title">Healthcare Resources</h2>
+                    <div class="card-icon" style="background-color: #2ecc71;">
+                        <i class="fas fa-book-medical"></i>
+                    </div>
+                </div>
+                <div class="card-content resources-grid">
+                    <a href="https://www.uptodate.com" target="_blank" class="resource-item">
+                        <div class="resource-icon"><i class="fas fa-notes-medical"></i></div>
+                        <div class="resource-title">UpToDate</div>
+                        <div class="resource-desc">Evidence-based clinical support</div>
+                    </a>
+                    <a href="https://www.medscape.com" target="_blank" class="resource-item">
+                        <div class="resource-icon"><i class="fas fa-stethoscope"></i></div>
+                        <div class="resource-title">Medscape</div>
+                        <div class="resource-desc">Medical news & reference</div>
+                    </a>
+                    <a href="https://www.nejm.org" target="_blank" class="resource-item">
+                        <div class="resource-icon"><i class="fas fa-journal-whills"></i></div>
+                        <div class="resource-title">NEJM</div>
+                        <div class="resource-desc">New England Journal</div>
+                    </a>
+                    <a href="https://www.cdc.gov" target="_blank" class="resource-item">
+                        <div class="resource-icon"><i class="fas fa-virus"></i></div>
+                        <div class="resource-title">CDC</div>
+                        <div class="resource-desc">Guidelines & protocols</div>
+                    </a>
+                    <a href="https://pubmed.ncbi.nlm.nih.gov" target="_blank" class="resource-item">
+                        <div class="resource-icon"><i class="fas fa-search"></i></div>
+                        <div class="resource-title">PubMed</div>
+                        <div class="resource-desc">Medical literature</div>
+                    </a>
+                    <a href="https://www.drugs.com" target="_blank" class="resource-item">
+                        <div class="resource-icon"><i class="fas fa-pills"></i></div>
+                        <div class="resource-title">Drugs.com</div>
+                        <div class="resource-desc">Drug database</div>
+                    </a>
+                    <a href="https://www.accessmedicine.com" target="_blank" class="resource-item">
+                        <div class="resource-icon"><i class="fas fa-book"></i></div>
+                        <div class="resource-title">Access Medicine</div>
+                        <div class="resource-desc">Medical textbooks</div>
+                    </a>
+                    <a href="https://bestpractice.bmj.com" target="_blank" class="resource-item">
+                        <div class="resource-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="resource-title">BMJ Best Practice</div>
+                        <div class="resource-desc">Clinical support</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Wellness Tips -->
+            <div class="card wellness-card">
+                <div class="card-header">
+                    <h2 class="card-title">Physician Wellness Corner</h2>
+                    <div class="card-icon" style="background-color: #e74c3c;">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                </div>
+                <div class="card-content" id="wellness-tip-container">
+                    <!-- Wellness tip will be dynamically inserted here -->
+                    <div class="wellness-tip">
+                        <div class="wellness-icon">
+                            <i class="fas fa-spinner fa-pulse"></i>
+                        </div>
+                        <div class="wellness-content">
+                            <h3>Loading today's wellness tip...</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-primary" id="refresh-tip">
+                        <i class="fas fa-sync"></i> New Wellness Tip
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Prescription Modal -->
-    <div class="modal" id="prescriptionModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Add Prescription</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="prescriptionForm" action="/doctor/prescriptions/add" method="POST">
-                    <input type="hidden" id="appointmentId" name="appointmentId">
-                    <input type="hidden" id="patientId" name="patientId">
-
-                    <div class="form-group">
-                        <label class="form-label" for="diagnosis">Diagnosis</label>
-                        <input type="text" class="form-control" id="diagnosis" name="diagnosis" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="prescription">Prescription & Medications</label>
-                        <textarea class="form-control" id="prescription" name="prescription" required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="notes">Doctor's Notes</label>
-                        <textarea class="form-control" id="notes" name="notes"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="followUp">Follow-up Date (if needed)</label>
-                        <input type="date" class="form-control" id="followUp" name="followUp">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn btn-secondary" id="closeModal">Cancel</button>
-                <button class="modal-btn btn-primary" id="continueToPresc">Continue</button>
-            </div>
-        </div>
+    </div>
     </div>
 
-    <!-- Billing Modal -->
-    <div class="modal" id="billingModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Billing Information</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="billingForm" action="/doctor/billing/add" method="POST">
-                    <input type="hidden" id="prescriptionId" name="prescriptionId">
-
-                    <div class="form-group">
-                        <label class="form-label" for="consultationFee">Consultation Fee</label>
-                        <input type="number" class="form-control" id="consultationFee" name="consultationFee" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="medicationFee">Medication Fee (if applicable)</label>
-                        <input type="number" class="form-control" id="medicationFee" name="medicationFee" value="0">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="otherCharges">Other Charges</label>
-                        <input type="number" class="form-control" id="otherCharges" name="otherCharges" value="0">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="billNotes">Notes</label>
-                        <textarea class="form-control" id="billNotes" name="billNotes"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn btn-secondary" id="backToPrescription">Back</button>
-                <button class="modal-btn btn-primary" id="completeProcess">Complete</button>
-            </div>
-        </div>
-    </div>
-
+    <script src="/script/Script.js"></script>
     <script>
-        // Sample JavaScript for functionality (you'll need to integrate with your backend)
         document.addEventListener('DOMContentLoaded', function () {
-            // Variables
-            const completeBtns = document.querySelectorAll('.complete-btn');
-            const prescriptionModal = document.getElementById('prescriptionModal');
-            const billingModal = document.getElementById('billingModal');
-            const closeModalBtns = document.querySelectorAll('.modal-close');
-            const closeModalBtn = document.getElementById('closeModal');
-            const continueToPresc = document.getElementById('continueToPresc');
-            const backToPrescription = document.getElementById('backToPrescription');
-            const completeProcess = document.getElementById('completeProcess');
+            // Medical News Array - Simulating news that would come from an API
+            const medicalNews = [
+                {
+                    title: "New Study Shows Promise in Alzheimer's Treatment",
+                    content: "Researchers at Mayo Clinic have identified a new mechanism that could lead to more effective treatments for Alzheimer's disease, targeting the tau protein formation process.",
+                    source: "Journal of Medical Research",
+                    date: "May 17, 2025"
+                },
+                {
+                    title: "CDC Updates COVID-19 Vaccination Guidelines",
+                    content: "New guidelines recommend annual boosters for healthcare professionals and individuals with compromised immune systems. The updated vaccines target the latest variants.",
+                    source: "Centers for Disease Control",
+                    date: "May 15, 2025"
+                },
+                {
+                    title: "Breakthrough in Diabetes Type 1 Management",
+                    content: "A novel artificial pancreas system has shown exceptional results in clinical trials, reducing the burden of diabetes management and improving blood glucose control.",
+                    source: "New England Journal of Medicine",
+                    date: "May 12, 2025"
+                },
+                {
+                    title: "Antibiotic Resistance: New Compounds Show Promise",
+                    content: "Scientists have discovered a new class of antibiotic compounds effective against multidrug-resistant bacteria, potentially addressing the growing crisis of antimicrobial resistance.",
+                    source: "Science Translational Medicine",
+                    date: "May 10, 2025"
+                },
+                {
+                    title: "Heart Disease Prevention: Updated Guidelines",
+                    content: "The American Heart Association has released new guidelines for cardiovascular disease prevention, emphasizing personalized risk assessment and earlier interventions.",
+                    source: "American Heart Association",
+                    date: "May 8, 2025"
+                },
+                {
+                    title: "Telehealth Improves Rural Healthcare Outcomes",
+                    content: "A large-scale study demonstrates that telehealth services significantly improve healthcare access and outcomes in rural communities, particularly for chronic disease management.",
+                    source: "Journal of Rural Health",
+                    date: "May 5, 2025"
+                }
+            ];
 
-            // Calendar day click
-            const calendarDays = document.querySelectorAll('.calendar-day');
-            calendarDays.forEach(day => {
-                day.addEventListener('click', function () {
-                    const date = this.getAttribute('data-date');
-                    // Here you would load appointments for the selected date
-                    // This would typically be an AJAX call to your backend
+            // Wellness Tips Array
+            const wellnessTips = [
+                {
+                    title: "Practice Mindful Minutes",
+                    content: "Take three 1-minute breaks throughout your day. Focus only on your breathing to reset your mind between patients.",
+                    icon: "fas fa-brain"
+                },
+                {
+                    title: "Hydration Reminder",
+                    content: "Keep a water bottle at your workstation and aim to refill it at least twice during your shift. Proper hydration improves cognitive function and reduces fatigue.",
+                    icon: "fas fa-tint"
+                },
+                {
+                    title: "Physical Reset",
+                    content: "Between patients, try standing up and doing a quick stretch routine focusing on your neck, shoulders, and lower back to reduce physical tension.",
+                    icon: "fas fa-walking"
+                },
+                {
+                    title: "Boundary Setting",
+                    content: "Schedule 5-10 minutes between appointments when possible. This buffer helps reduce stress and allows you to properly prepare for each patient.",
+                    icon: "fas fa-user-clock"
+                },
+                {
+                    title: "Nutrition for Focus",
+                    content: "Keep healthy snacks like nuts or fruit in your office. These provide steady energy and help maintain concentration throughout long shifts.",
+                    icon: "fas fa-apple-alt"
+                },
+                {
+                    title: "Deep Breathing Exercise",
+                    content: "Try the 4-7-8 breathing technique when feeling stressed: Inhale for 4 seconds, hold for 7 seconds, exhale for 8 seconds. Repeat 3-4 times.",
+                    icon: "fas fa-wind"
+                },
+                {
+                    title: "Gratitude Practice",
+                    content: "At the end of each day, write down three positive patient interactions or successful treatments. This helps maintain perspective and job satisfaction.",
+                    icon: "fas fa-hand-holding-heart"
+                },
+                {
+                    title: "Screen Break",
+                    content: "Follow the 20-20-20 rule: Every 20 minutes, look at something 20 feet away for 20 seconds to reduce eye strain from electronic health records.",
+                    icon: "fas fa-laptop-medical"
+                }
+            ];
 
-                    // For demonstration:
-                    document.querySelector('.appointments-date').textContent =
-                        new Date(new Date().getFullYear(), new Date().getMonth(), date)
-                            .toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            // Function to display random medical news with colorful categories
+            function displayRandomNews() {
+                const newsContainer = document.getElementById('medical-news');
+                const randomIndexes = getRandomIndexes(medicalNews.length, 3); // Increased to 3 news items to fill space
+                let newsHTML = '';
+
+                // Define color categories for different news types
+                const newsCategories = {
+                    "Research": "#3498db",
+                    "Guidelines": "#27ae60",
+                    "Technology": "#9b59b6",
+                    "Public Health": "#e67e22",
+                    "Treatment": "#f1c40f"
+                };
+
+                // Assign a category to each news item
+                const categories = ["Research", "Guidelines", "Technology", "Public Health", "Treatment"];
+
+                randomIndexes.forEach((index, i) => {
+                    const news = medicalNews[index];
+                    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+                    const categoryColor = newsCategories[randomCategory];
+
+                    newsHTML += `
+                    <div class="news-item" style="border-left-color: ${categoryColor};">
+                        <span style="display: inline-block; background-color: ${categoryColor}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; margin-bottom: 5px;">${randomCategory}</span>
+                        <h3>${news.title}</h3>
+                        <p>${news.content}</p>
+                        <div class="news-footer">
+                            <span class="news-source">${news.source}</span>
+                            <span class="news-date">${news.date}</span>
+                        </div>
+                    </div>`;
+                });
+
+                newsContainer.innerHTML = newsHTML;
+            }
+
+            // Load saved notes from localStorage
+            document.getElementById('doctor-notes').value = localStorage.getItem('doctorNotes') || '';
+
+
+            // Function to display random wellness tip with visual enhancements
+            function displayRandomWellnessTip() {
+                const tipContainer = document.getElementById('wellness-tip-container');
+                const indexes = getRandomIndexes(wellnessTips.length, 2); // Get 2 random tips
+                let html = '';
+
+                indexes.forEach(i => {
+                    const tip = wellnessTips[i];
+                    let patternClass = "";
+                    if (tip.icon.includes("brain")) patternClass = "mindfulness-pattern";
+                    else if (tip.icon.includes("tint")) patternClass = "hydration-pattern";
+                    else if (tip.icon.includes("walking")) patternClass = "physical-pattern";
+
+                    html += `
+        <div class="wellness-tip ${patternClass}">
+            <div class="wellness-icon">
+                <i class="${tip.icon}"></i>
+            </div>
+            <div class="wellness-content">
+                <h3>${tip.title}</h3>
+                <p>${tip.content}</p>
+            </div>
+        </div>`;
+                });
+
+                tipContainer.innerHTML = html;
+            }
+
+
+            // Helper function to get multiple unique random indexes
+            function getRandomIndexes(max, count) {
+                const indexes = new Set();
+                while (indexes.size < count && indexes.size < max) {
+                    indexes.add(Math.floor(Math.random() * max));
+                }
+                return Array.from(indexes);
+            }
+
+            // Display initial random content
+            displayRandomNews();
+            displayRandomWellnessTip();
+
+            // Set up refresh buttons
+            document.getElementById('refresh-news').addEventListener('click', displayRandomNews);
+            document.getElementById('refresh-tip').addEventListener('click', displayRandomWellnessTip);
+
+            // Medical Calculator Functionality
+            const calculatorTabs = document.querySelectorAll('.calculator-tab');
+            const calculatorContents = document.querySelectorAll('.calculator-content');
+
+            // Switch between calculator tabs
+            calculatorTabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    calculatorTabs.forEach(t => t.classList.remove('active'));
+                    calculatorContents.forEach(c => c.classList.remove('active'));
+
+                    this.classList.add('active');
+                    const calcType = this.getAttribute('data-calc');
+                    document.getElementById(`${calcType}-calculator`).classList.add('active');
                 });
             });
+            // BMI Calculation
+            document.getElementById('calculate-bmi').addEventListener('click', function () {
+                const weight = parseFloat(document.getElementById('bmi-weight').value);
+                const heightCm = parseFloat(document.getElementById('bmi-height').value);
+                if (!weight || !heightCm) return alert("Please enter valid weight and height.");
 
-            // Complete Appointment Button Click
-            completeBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const appointmentId = this.getAttribute('data-id');
-
-                    // Set hidden fields in the form
-                    document.getElementById('appointmentId').value = appointmentId;
-
-                    // For demonstration, we'd get the patient ID from the appointment data
-                    // Normally this would be fetched from your appointment object
-                    document.getElementById('patientId').value = "SAMPLE_PATIENT_ID";
-
-                    // Show prescription modal
-                    prescriptionModal.classList.add('active');
-                });
+                const heightM = heightCm / 100;
+                const bmi = weight / (heightM * heightM);
+                document.getElementById('bmi-result').innerHTML =
+                    `<div class="result-value">BMI: ${bmi.toFixed(2)}</div>`;
             });
 
-            // Continue to Billing
-            continueToPresc.addEventListener('click', function () {
-                // Normally you would validate and submit the prescription form here
-                // For demo purposes, we'll just show the billing modal
-                prescriptionModal.classList.remove('active');
+            // BSA Calculation (DuBois Formula)
+            document.getElementById('calculate-bsa').addEventListener('click', function () {
+                const weight = parseFloat(document.getElementById('bsa-weight').value);
+                const height = parseFloat(document.getElementById('bsa-height').value);
+                if (!weight || !height) return alert("Please enter valid weight and height.");
 
-                // Set the prescription ID (this would come from your backend after saving the prescription)
-                document.getElementById('prescriptionId').value = "SAMPLE_PRESCRIPTION_ID";
-
-                billingModal.classList.add('active');
+                const bsa = 0.007184 * Math.pow(weight, 0.425) * Math.pow(height, 0.725);
+                document.getElementById('bsa-result').innerHTML =
+                    `<div class="result-value">BSA: ${bsa.toFixed(2)} m²</div>`;
             });
 
-            // Back to Prescription
-            backToPrescription.addEventListener('click', function () {
-                billingModal.classList.remove('active');
-                prescriptionModal.classList.add('active');
+            // Dosage Calculation
+            document.getElementById('calculate-dosage').addEventListener('click', function () {
+                const weight = parseFloat(document.getElementById('dosage-weight').value);
+                const rate = parseFloat(document.getElementById('dosage-rate').value);
+                if (!weight || !rate) return alert("Please enter valid weight and dosage rate.");
+
+                const dosage = weight * rate;
+                document.getElementById('dosage-result').innerHTML =
+                    `<div class="result-value">Dosage: ${dosage.toFixed(2)} mg</div>`;
             });
 
-            // Complete the whole process
-            completeProcess.addEventListener('click', function () {
-                // Here you would submit the billing form
-                // For demo purposes, we'll just close the modal
-                billingModal.classList.remove('active');
+            // eGFR Calculation (CKD-EPI simplified)
+            document.getElementById('calculate-egfr').addEventListener('click', function () {
+                const creatinine = parseFloat(document.getElementById('egfr-creatinine').value);
+                const age = parseInt(document.getElementById('egfr-age').value);
+                const gender = document.querySelector('input[name="egfr-gender"]:checked').value;
+                const race = document.querySelector('input[name="egfr-race"]:checked').value;
 
-                // You might want to show a success message or refresh the appointments list
-                alert('Appointment completed, prescription and billing information saved!');
+                if (!creatinine || !age) return alert("Please enter valid values.");
 
-                // In a real application, you would update the UI to reflect the completed appointment
-            });
+                let k = gender === 'female' ? 0.7 : 0.9;
+                let a = gender === 'female' ? -0.329 : -0.411;
+                let min = Math.min(creatinine / k, 1);
+                let max = Math.max(creatinine / k, 1);
 
-            // Close modals
-            closeModalBtns.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    prescriptionModal.classList.remove('active');
-                    billingModal.classList.remove('active');
-                });
-            });
+                let egfr = 141 * Math.pow(min, a) * Math.pow(max, -1.209) * Math.pow(0.993, age);
+                if (gender === 'female') egfr *= 1.018;
+                if (race === 'black') egfr *= 1.159;
 
-            closeModalBtn.addEventListener('click', function () {
-                prescriptionModal.classList.remove('active');
+                document.getElementById('egfr-result').innerHTML =
+                    `<div class="result-value">eGFR: ${egfr.toFixed(2)} mL/min/1.73m²</div>`;
             });
         });
     </script>
