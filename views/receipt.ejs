@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Receipt</title>
+    <style>
+        body { font-family: Arial; padding: 30px; }
+        .receipt { max-width: 700px; margin: auto; border: 1px solid #ccc; padding: 20px; }
+        .receipt h2 { text-align: center; }
+        table { width: 100%; margin-top: 20px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        .print-btn { margin-top: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="receipt">
+    <h2>Payment Receipt</h2>
+    <table>
+        <tr><td><strong>Receipt ID:</strong></td><td><%= bill._id %></td></tr>
+        <tr><td><strong>Date:</strong></td><td><%= new Date(bill.createdAt).toLocaleDateString() %></td></tr>
+        <tr><td><strong>Patient:</strong></td><td><%= patient.name %></td></tr>
+        <tr><td><strong>Description:</strong></td><td><%= bill.notes || 'Consultation Fee' %></td></tr>
+        <tr><td><strong>Amount:</strong></td><td>$<%= bill.amount.toFixed(2) %></td></tr>
+        <tr><td><strong>Payment Method:</strong></td><td><%= bill.paymentMethod === 'card' ? 'Credit/Debit Card' : 'UPI' %></td></tr>
+        <tr><td><strong>Status:</strong></td><td><strong style="color:green;">Paid</strong></td></tr>
+    </table>
+    <div class="print-btn">
+        <button onclick="window.print()">🖨 Print Receipt</button>
+    </div>
+</div>
+</body>
+</html>

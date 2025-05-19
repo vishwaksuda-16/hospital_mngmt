@@ -1,0 +1,958 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HMS Doctor Portal - Billing</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Reuse the same styling from the calendar page */
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --secondary: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #f1f2f6;
+            --dark: #2c3e50;
+            --sidebar-width: 240px;
+            --sidebar-collapsed-width: 70px;
+            --completed: #8e44ad;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        /* Layout */
+        .portal-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--secondary);
+            color: white;
+            transition: width 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        /* Updated Sidebar styling */
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 24px;
+        }
+
+        .user-info {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .user-info:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .user-id {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-links li a i {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-links li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--primary);
+        }
+
+        .nav-links li a:hover i {
+            transform: translateX(5px);
+        }
+
+        .nav-links li a.active {
+            background-color: var(--primary);
+            border-left: 3px solid white;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            color: #e74c3c;
+            border: 1.5px solid #e74c3c;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .logout-btn i {
+            margin-right: 10px;
+            transition: transform 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #e74c3c;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+        }
+
+        .logout-btn:hover i {
+            transform: translateX(-3px);
+        }
+
+        /* Topbar */
+        .topbar {
+            background-color: white;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: var(--dark);
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .page-title h1 {
+            font-size: 24px;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn {
+            background: none;
+            border: none;
+            color: var(--dark);
+            font-size: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Page Content */
+        .page-content {
+            padding: 25px;
+        }
+
+        /* Card design */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border-top: 4px solid var(--primary);
+            background-color: white;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+        }
+
+        .card-title {
+            margin: 0;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        /* Table styling */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--secondary);
+            background-color: #f8f9fa;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f1f4f7;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        /* Button styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-paid {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .status-pending {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        /* Toast notification styling */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+
+        .notification {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+
+        .notification-icon {
+            margin-right: 12px;
+            font-size: 1.2rem;
+        }
+
+        .notification-success .notification-icon {
+            color: var(--success);
+        }
+
+        .notification-error .notification-icon {
+            color: var(--danger);
+        }
+
+        .notification-info .notification-icon {
+            color: var(--primary);
+        }
+
+        .notification.fade-out {
+            animation: fadeOut 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* Invoice styling */
+        .invoice-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        /* Billing Modal */
+        .billing-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .billing-modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 0;
+            width: 500px;
+            max-width: 90%;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: modalFadeIn 0.3s;
+        }
+
+        .billing-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--primary);
+            color: white;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .billing-modal-header h3 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .billing-modal-close {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .billing-modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                width: 0;
+                position: fixed;
+                left: -280px;
+            }
+
+            .sidebar.active {
+                width: var(--sidebar-width);
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="portal-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-hospital"></i> <span>HMS</span></h2>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar"><%= doctor.name.charAt(4) %></div>
+                <div class="user-details">
+                    <div class="user-name"><%= doctor.name %></div>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/doctor/dashboard"><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
+                <li><a href="/doctor/calendar"><i class="fas fa-calendar-check"></i> <span>Calendar</span></a></li>
+                <li><a href="/doctor/billing" class="active"><i class="fas fa-file-invoice-dollar"></i> <span>Billing</span></a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <form action="/logout" method="POST">
+                    <button class="logout-btn" type="submit">
+                        <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Topbar -->
+            <div class="topbar">
+                <button id="menu-toggle" class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    <h1>Patient Billing</h1>
+                </div>
+                <div class="topbar-right">
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <div class="notification-badge">2</div>
+                    </button>
+                    <span>Welcome, <%= doctor.name.split(' ')[1] %></span>
+                </div>
+            </div>
+
+            <div class="page-content">
+                <!-- Toast container -->
+                <div class="toast-container"></div>
+
+                <!-- Billing Overview Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Billing Overview</h2>
+                        <div>
+                            <button class="btn btn-primary" id="createNewBillBtn">
+                                <i class="fas fa-plus-circle"></i> Create New Bill
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="billing-stats">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="stat-card">
+                                        <h3>Total Billed</h3>
+                                        <h2>$<%= totalBilled %></h2>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stat-card">
+                                        <h3>Total Paid</h3>
+                                        <h2>$<%= totalPaid %></h2>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stat-card">
+                                        <h3>Total Outstanding</h3>
+                                        <h2>$<%= totalOutstanding %></h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Bills Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Bills</h2>
+                    </div>
+                    <div class="card-content">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Bill ID</th>
+                                    <th>Patient</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (bills && bills.length > 0) { %>
+                                    <% bills.forEach(bill => { %>
+                                        <tr>
+                                            <td><%= bill._id.toString().substring(0, 8) %></td>
+                                            <td><%= bill.patientName %></td>
+                                            <td><%= new Date(bill.createdAt).toLocaleDateString() %></td>
+                                            <td>$<%= bill.amount.toFixed(2) %></td>
+                                            <td>
+                                                <span class="status-badge status-<%= bill.status.toLowerCase() %>">
+                                                    <%= bill.status %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary view-bill-btn" data-bill-id="<%= bill._id %>">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="6" class="text-center">No bills found</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Completed Appointments Without Bills Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Completed Appointments Without Bills</h2>
+                    </div>
+                    <div class="card-content">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Appointment ID</th>
+                                    <th>Patient</th>
+                                    <th>Date</th>
+                                    <th>Purpose</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (appointmentsWithoutBills && appointmentsWithoutBills.length > 0) { %>
+                                    <% appointmentsWithoutBills.forEach(appointment => { %>
+                                        <tr>
+                                            <td><%= appointment._id.toString().substring(0, 8) %></td>
+                                            <td><%= appointment.patientName %></td>
+                                            <td><%= new Date(appointment.date).toLocaleDateString() %></td>
+                                            <td><%= appointment.purpose %></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary create-bill-btn" 
+                                                    data-appointment-id="<%= appointment._id %>"
+                                                    data-patient-id="<%= appointment.patientId %>"
+                                                    data-patient-name="<%= appointment.patientName %>">
+                                                    <i class="fas fa-file-invoice-dollar"></i> Create Bill
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="text-center">No completed appointments without bills</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Bill Modal -->
+    <div id="createBillModal" class="billing-modal">
+        <div class="billing-modal-content">
+            <div class="billing-modal-header">
+                <h3>Create New Bill</h3>
+                <span class="billing-modal-close">&times;</span>
+            </div>
+            <div class="billing-modal-body">
+                <form id="createBillForm">
+                    <input type="hidden" id="appointmentId" name="appointmentId">
+                    <input type="hidden" id="patientId" name="patientId">
+                    
+                    <div class="form-group">
+                        <label for="patientName">Patient Name</label>
+                        <input type="text" id="patientName" name="patientName" class="form-control" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="consultationFee">Consultation Fee ($)</label>
+                        <input type="number" id="consultationFee" name="consultationFee" class="form-control" min="0" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">Notes (Optional)</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger" id="cancelBillBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Bill</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Bill Modal -->
+    <div id="viewBillModal" class="billing-modal">
+        <div class="billing-modal-content">
+            <div class="billing-modal-header">
+                <h3>Bill Details</h3>
+                <span class="billing-modal-close">&times;</span>
+            </div>
+            <div class="billing-modal-body">
+                <div id="billDetails">
+                    <!-- Bill details will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('expanded');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                </div>
+                <div class="notification-content">${message}</div>
+            `;
+            const container = document.querySelector('.toast-container');
+            container.appendChild(notification);
+            setTimeout(() => {
+                notification.classList.add('fade-out');
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        // Modal handlers
+        document.addEventListener('DOMContentLoaded', () => {
+            // Billing modal elements
+            const createBillModal = document.getElementById('createBillModal');
+            const createBillBtn = document.getElementById('createNewBillBtn');
+            const cancelBillBtn = document.getElementById('cancelBillBtn');
+            const closeModalBtns = document.querySelectorAll('.billing-modal-close');
+            const createBillForm = document.getElementById('createBillForm');
+            const viewBillModal = document.getElementById('viewBillModal');
+            
+            // Open create bill modal (for the "Create New Bill" button)
+            if (createBillBtn) {
+                createBillBtn.addEventListener('click', () => {
+                    // Clear form
+                    createBillForm.reset();
+                    document.getElementById('patientId').value = '';
+                    document.getElementById('appointmentId').value = '';
+                    document.getElementById('patientName').value = '';
+                    
+                    // Show modal
+                    createBillModal.style.display = 'block';
+                });
+            }
+            
+            // Open create bill modal for completed appointments
+            const createBillBtns = document.querySelectorAll('.create-bill-btn');
+            createBillBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const appointmentId = btn.getAttribute('data-appointment-id');
+                    const patientId = btn.getAttribute('data-patient-id');
+                    const patientName = btn.getAttribute('data-patient-name');
+                    
+                    // Set form values
+                    document.getElementById('appointmentId').value = appointmentId;
+                    document.getElementById('patientId').value = patientId;
+                    document.getElementById('patientName').value = patientName;
+                    
+                    // Show modal
+                    createBillModal.style.display = 'block';
+                });
+            });
+            
+            // Close modal buttons
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    createBillModal.style.display = 'none';
+                    viewBillModal.style.display = 'none';
+                });
+            });
+            
+            // Cancel button
+            if (cancelBillBtn) {
+                cancelBillBtn.addEventListener('click', () => {
+                    createBillModal.style.display = 'none';
+                });
+            }
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === createBillModal) createBillModal.style.display = 'none';
+                if (e.target === viewBillModal) viewBillModal.style.display = 'none';
+            });
+            
+            // Form submission
+            if (createBillForm) {
+                createBillForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const formData = {
+                        appointmentId: document.getElementById('appointmentId').value,
+                        patientId: document.getElementById('patientId').value,
+                        consultationFee: document.getElementById('consultationFee').value,
+                        notes: document.getElementById('notes').value
+                    };
+                    
+                    // Submit form data via AJAX
+                    fetch('/doctor/billing/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification('Bill created successfully!', 'success');
+                            createBillModal.style.display = 'none';
+                            // Reload page to show updated data
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            showNotification('Failed to create bill: ' + data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showNotification('An error occurred: ' + error.message, 'error');
+                    });
+                });
+            }
+            
+            // View bill details
+            const viewBillBtns = document.querySelectorAll('.view-bill-btn');
+            viewBillBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const billId = btn.getAttribute('data-bill-id');
+                                        // Fetch and display bill details
+                    fetch(`/doctor/billing/${billId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && data.bill) {
+                                const bill = data.bill;
+                                const detailsHTML = `
+                                    <p><strong>Bill ID:</strong> ${bill._id}</p>
+                                    <p><strong>Patient:</strong> ${bill.patientName}</p>
+                                    <p><strong>Date:</strong> ${new Date(bill.createdAt).toLocaleDateString()}</p>
+                                    <p><strong>Consultation Fee:</strong> $${bill.amount.toFixed(2)}</p>
+                                    <p><strong>Status:</strong> ${bill.status}</p>
+                                    <p><strong>Notes:</strong> ${bill.notes || 'N/A'}</p>
+                                `;
+                                document.getElementById('billDetails').innerHTML = detailsHTML;
+                                viewBillModal.style.display = 'block';
+                            } else {
+                                showNotification('Unable to fetch bill details.', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            showNotification('An error occurred: ' + error.message, 'error');
+                        });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -93,7 +94,7 @@
             margin-left: var(--sidebar-collapsed-width);
         }
 
-        /* Sidebar */
+        /* Updated Sidebar styling */
         .sidebar-header {
             padding: 20px;
             text-align: center;
@@ -113,6 +114,11 @@
             display: flex;
             align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .user-info:hover {
+            background-color: rgba(255, 255, 255, 0.05);
         }
 
         .user-avatar {
@@ -125,6 +131,7 @@
             justify-content: center;
             font-weight: bold;
             margin-right: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
         .user-details {
@@ -144,6 +151,7 @@
         .nav-links {
             list-style: none;
             padding: 0;
+            margin-top: 10px;
         }
 
         .nav-links li a {
@@ -153,6 +161,7 @@
             color: white;
             text-decoration: none;
             transition: all 0.3s ease;
+            border-left: 3px solid transparent;
         }
 
         .nav-links li a i {
@@ -160,14 +169,21 @@
             font-size: 18px;
             width: 24px;
             text-align: center;
+            transition: transform 0.2s ease;
         }
 
         .nav-links li a:hover {
             background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--primary);
+        }
+
+        .nav-links li a:hover i {
+            transform: translateX(5px);
         }
 
         .nav-links li a.active {
             background-color: var(--primary);
+            border-left: 3px solid white;
         }
 
         .sidebar-footer {
@@ -175,6 +191,7 @@
             position: absolute;
             bottom: 0;
             width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
         #today-appointments {
   padding: 12px 15px;
@@ -197,11 +214,18 @@
 
         .logout-btn i {
             margin-right: 10px;
+            transition: transform 0.2s ease;
         }
 
         .logout-btn:hover {
             background-color: #e74c3c;
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+        }
+
+        .logout-btn:hover i {
+            transform: translateX(-3px);
         }
 
 
@@ -276,6 +300,12 @@
             border-top: 4px solid var(--primary);
             background-color: white;
             margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
         }
 
         .card-header {
@@ -365,6 +395,10 @@
         .status-completed {
             background-color: var(--completed);
         }
+        .fc-event {
+    cursor: pointer !important;
+}
+        
 
         /* Table styling */
         .table {
@@ -676,6 +710,7 @@
                 <li><a href="/doctor/dashboard"><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
                 <li><a href="/doctor/calendar" class="active"><i class="fas fa-calendar-check"></i>
                         <span>Calendar</span></a></li>
+                <li><a href="/doctor/billing"><i class="fas fa-file-invoice-dollar"></i> <span>Billing</span></a></li>
             </ul>
             <div class="sidebar-footer">
                 <form action="/logout" method="POST">
@@ -789,25 +824,19 @@
                             <div class="detail-label">Status</div>
                             <div class="detail-value" id="modal-status">-</div>
                         </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Doctor Notes</div>
-                            <div class="detail-value">
-                                <textarea id="modal-notes" class="patient-note"
-                                    placeholder="Add notes about this appointment..."></textarea>
-                            </div>
-                        </div>
                     </div>
                     <div class="appointment-actions">
-                        <button class="btn btn-danger" id="btn-cancel-appointment">
-                            <i class="fas fa-times-circle"></i> Cancel Appointment
-                        </button>
-                        <button class="btn btn-completed" id="btn-complete-appointment">
-                            <i class="fas fa-check-circle"></i> Mark as Completed
-                        </button>
-                        <button class="btn btn-success" id="btn-save-notes">
-                            <i class="fas fa-save"></i> Save Notes
-                        </button>
-                    </div>
+    <button class="btn btn-danger" id="btn-cancel-appointment">
+        <i class="fas fa-times-circle"></i> Cancel Appointment
+    </button>
+    <button class="btn btn-completed" id="btn-complete-appointment">
+        <i class="fas fa-check-circle"></i> Mark as Completed
+    </button>
+    <button class="btn btn-success" id="btn-confirm-appointment">
+        <i class="fas fa-check"></i> Confirm Appointment
+    </button>
+</div>
+
                 </div>
             </div>
         </div>
@@ -815,360 +844,262 @@
     
 
     <!-- Load FullCalendar -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
 
-    <script>
-        // Get dynamic appointment data from server
-        const rawAppointments = <%- JSON.stringify(appointmentsByDate) %>;
-        const events = [];
+<script>
+    let confirmAction = null;
+
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-icon">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+            </div>
+            <div class="notification-content">${message}</div>
+        `;
+        const container = document.querySelector('.toast-container');
+        container.appendChild(notification);
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 500);
+        }, 3000);
+    }
+
+    function showConfirmationModal(message, onConfirm) {
+        document.getElementById('confirmModalMessage').textContent = message;
+        document.getElementById('confirmationModal').style.display = 'block';
+        confirmAction = onConfirm;
+    }
+
+    function openAppointmentModal(event) {
+        const appointmentDetails = event.extendedProps || event;
+
+        document.getElementById('modal-patient-name').textContent = appointmentDetails.patientName || 'N/A';
+        document.getElementById('modal-patient-id').textContent = appointmentDetails.patientId || 'N/A';
+        document.getElementById('modal-patient-age').textContent = appointmentDetails.patientAge || 'N/A';
+
+        const dateObj = new Date(`${appointmentDetails.date}T${appointmentDetails.time}`);
+        const dateStr = dateObj.toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+        const timeStr = dateObj.toLocaleTimeString('en-US', {
+            hour: '2-digit', minute: '2-digit', hour12: true
+        });
+
+        document.getElementById('modal-datetime').textContent = `${dateStr} at ${timeStr}`;
+        document.getElementById('modal-purpose').textContent = appointmentDetails.purpose || 'Regular checkup';
+        document.getElementById('modal-status').textContent =
+            appointmentDetails.status.charAt(0).toUpperCase() + appointmentDetails.status.slice(1);
         
-        // Convert raw appointments to FullCalendar events format
-        for (const date in rawAppointments) {
-            rawAppointments[date].forEach(app => {
-                let statusClass = 'pending';
-                if (app.status === 'confirmed') statusClass = 'confirmed';
-                if (app.status === 'cancelled') statusClass = 'cancelled';
-                if (app.status === 'completed') statusClass = 'completed';
-                
-                events.push({
-                    id: app.id,
-                    title: app.patientName + ' - ' + app.purpose,
-                    start: `${date}T${app.time}`,
-                    className: `status-${statusClass}`,
-                    extendedProps: {
-                        _id: app.id,
-                        patientName: app.patientName,
-                        patientId: app.patientId,
-                        patientAge: app.patientAge,
-                        purpose: app.purpose,
-                        status: app.status,
-                        time: app.time,
-                        date: date,
-                        doctorNotes: app.notes || ""
-                    }
-                });
-            });
+        document.getElementById('btn-cancel-appointment').setAttribute('data-appointment-id', appointmentDetails._id);
+        document.getElementById('btn-complete-appointment').setAttribute('data-appointment-id', appointmentDetails._id);
+        const confirmBtn = document.getElementById('btn-confirm-appointment');
+        confirmBtn.dataset.appointmentId = appointmentDetails._id;
+
+        const cancelBtn = document.getElementById('btn-cancel-appointment');
+        const completeBtn = document.getElementById('btn-complete-appointment');
+
+        cancelBtn.style.display = ['cancelled', 'completed'].includes(appointmentDetails.status) ? 'none' : 'inline-block';
+        completeBtn.style.display = ['cancelled', 'completed'].includes(appointmentDetails.status) ? 'none' : 'inline-block';
+
+        document.getElementById('appointmentModal').style.display = 'block';
+    }
+
+    function loadTodaysAppointments() {
+        const todayAppointmentsContainer = document.getElementById('today-appointments');
+        const today = new Date().toISOString().split('T')[0];
+
+        const todayAppointments = events.filter(event => event.start.startsWith(today))
+            .map(e => ({ ...e.extendedProps, startTime: e.start.split('T')[1] }))
+            .sort((a, b) => a.time.localeCompare(b.time));
+
+        if (todayAppointments.length === 0) {
+            todayAppointmentsContainer.innerHTML = '<p>No appointments scheduled for today.</p>';
+            return;
         }
 
-        // Function to toggle sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.querySelector('.main-content');
-            sidebar.classList.toggle('active');
-        }
+        let html = '<table class="table table-bordered table-striped">';
+        html += '<thead><tr><th>Time</th><th>Patient</th><th>Purpose</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
 
-        // Function to show notifications
-        function showNotification(message, type = 'info') {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.innerHTML = `
-                <div class="notification-icon">
-                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                </div>
-                <div class="notification-content">${message}</div>
-            `;
+        todayAppointments.forEach(app => {
+            const statusClass = `status-${app.status}`;
+            html += `<tr>
+                <td>${app.time}</td>
+                <td>${app.patientName}</td>
+                <td>${app.purpose}</td>
+                <td><span class="status-indicator ${statusClass}"></span> ${app.status.charAt(0).toUpperCase() + app.status.slice(1)}</td>
+                <td><button class="btn btn-sm btn-primary" onclick='openAppointmentModal(${JSON.stringify(app)})'>
+                    <i class="fas fa-eye"></i> View</button>
+                </td></tr>`;
+        });
 
-            // Add to container
-            const container = document.querySelector('.toast-container');
-            container.appendChild(notification);
+        html += '</tbody></table>';
+        todayAppointmentsContainer.innerHTML = html;
 
-            // Auto-remove after delay
-            setTimeout(() => {
-                notification.classList.add('fade-out');
-                setTimeout(() => notification.remove(), 500);
-            }, 3000);
-        }
+        document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+    }
 
-        // Function to open appointment modal
-        function openAppointmentModal(event) {
-            const appointmentDetails = event.extendedProps || event;
+    const rawAppointments = <%- JSON.stringify(appointmentsByDate) %>;
+    const events = [];
 
-            // Set appointment details in modal
-            document.getElementById('modal-patient-name').textContent = appointmentDetails.patientName || 'N/A';
-            document.getElementById('modal-patient-id').textContent = appointmentDetails.patientId || 'N/A';
-            document.getElementById('modal-patient-age').textContent = appointmentDetails.patientAge || 'N/A';
-
-            // Format date and time for display
-            let dateObj;
-            let timeStr;
-            if (typeof event.start === 'object') {
-                // FullCalendar date object
-                dateObj = event.start;
-                timeStr = dateObj.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                });
-            } else {
-                // Raw date string from JSON
-                dateObj = new Date(`${appointmentDetails.date}T${appointmentDetails.time}`);
-                timeStr = appointmentDetails.time;
-            }
-            
-            const dateStr = dateObj.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            
-            document.getElementById('modal-datetime').textContent = `${dateStr} at ${timeStr}`;
-            document.getElementById('modal-purpose').textContent = appointmentDetails.purpose || 'Regular checkup';
-            document.getElementById('modal-status').textContent =
-                appointmentDetails.status.charAt(0).toUpperCase() + appointmentDetails.status.slice(1) || 'Pending';
-            document.getElementById('modal-notes').value = appointmentDetails.doctorNotes || '';
-
-            // Set appointment ID as data attribute for the buttons
-            document.getElementById('btn-save-notes').setAttribute('data-appointment-id', appointmentDetails._id);
-            document.getElementById('btn-cancel-appointment').setAttribute('data-appointment-id', appointmentDetails._id);
-            document.getElementById('btn-complete-appointment').setAttribute('data-appointment-id', appointmentDetails._id);
-
-            // Show or hide buttons based on appointment status
-            const cancelBtn = document.getElementById('btn-cancel-appointment');
-            const completeBtn = document.getElementById('btn-complete-appointment');
-            
-            if (appointmentDetails.status === 'cancelled' || appointmentDetails.status === 'completed') {
-                cancelBtn.style.display = 'none';
-            } else {
-                cancelBtn.style.display = 'inline-block';
-            }
-            
-            if (appointmentDetails.status === 'completed' || appointmentDetails.status === 'cancelled') {
-                completeBtn.style.display = 'none';
-            } else {
-                completeBtn.style.display = 'inline-block';
-            }
-
-            // Show modal
-            document.getElementById('appointmentModal').style.display = 'block';
-        }
-
-        // Function to load today's appointments
-        function loadTodaysAppointments() {
-            const todayAppointmentsContainer = document.getElementById('today-appointments');
-
-            // Filter appointments for today
-            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-            const todayAppointments = [];
-            
-            // Find all appointments for today from our events array
-            events.forEach(event => {
-                if (event.start.startsWith(today)) {
-                    todayAppointments.push({
-                        ...event.extendedProps,
-                        startTime: event.start.split('T')[1]
-                    });
+    for (const date in rawAppointments) {
+        rawAppointments[date].forEach(app => {
+            let statusClass = app.status || 'pending';
+            events.push({
+                id: app.id,
+                title: `${app.patientName} - ${app.purpose}`,
+                start: `${date}T${app.time}`,
+                className: `status-${statusClass}`,
+                extendedProps: {
+                    _id: app.id,
+                    patientName: app.patientName,
+                    patientId: app.patientId,
+                    patientAge: app.patientAge,
+                    purpose: app.purpose,
+                    status: app.status,
+                    time: app.time,
+                    date: date,
+                    doctorNotes: app.notes || ""
                 }
             });
-
-            if (todayAppointments.length === 0) {
-                todayAppointmentsContainer.innerHTML = '<p>No appointments scheduled for today.</p>';
-                return;
-            }
-
-            // Sort appointments by time
-            todayAppointments.sort((a, b) => a.time.localeCompare(b.time));
-
-            let html = '<table class="table table-bordered table-striped">';
-            html += '<thead><tr><th>Time</th><th>Patient</th><th>Purpose</th><th>Status</th><th>Actions</th></tr></thead>';
-            html += '<tbody>';
-
-            todayAppointments.forEach(appointment => {
-                // Format time for display if needed
-                const timeDisplay = appointment.time;
-
-                // Determine status class
-                let statusClass = 'status-pending';
-                if (appointment.status === 'confirmed') statusClass = 'status-confirmed';
-                if (appointment.status === 'cancelled') statusClass = 'status-cancelled';
-                if (appointment.status === 'completed') statusClass = 'status-completed';
-
-                html += `<tr><tr>
-    <td>${timeDisplay}</td>
-    <td>${appointment.patientName}</td>
-    <td>${appointment.purpose}</td>
-    <td><span class="status-indicator ${statusClass}"></span> ${appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}</td>
-    <td>
-        <button class="btn btn-sm btn-primary" onclick='openAppointmentModal(${JSON.stringify(appointment)})'>
-            <i class="fas fa-eye"></i> View
-        </button>
-    </td>
-</tr>`;
-            });
-
-            html += '</tbody></table>';
-            todayAppointmentsContainer.innerHTML = html;
-
-            // Set today's date in header
-            document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-        let confirmAction = null;
-
-function showConfirmationModal(message, onConfirm) {
-    document.getElementById('confirmModalMessage').textContent = message;
-    document.getElementById('confirmationModal').style.display = 'block';
-    confirmAction = onConfirm;
-}
-
-document.getElementById('confirmActionBtn').addEventListener('click', () => {
-    if (typeof confirmAction === 'function') {
-        confirmAction();
+        });
     }
-    document.getElementById('confirmationModal').style.display = 'none';
-});
 
-document.getElementById('cancelActionBtn').addEventListener('click', () => {
-    document.getElementById('confirmationModal').style.display = 'none';
-});
+    document.addEventListener('DOMContentLoaded', () => {
+        const calendarEl = document.getElementById('calendar');
 
-document.getElementById('closeConfirmModal').addEventListener('click', () => {
-    document.getElementById('confirmationModal').style.display = 'none';
-});
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            headerToolbar: {
+                left: 'prev',
+                center: 'title',
+                right: 'next'
+            },
+            events: events,
+            eventClick: info => openAppointmentModal(info.event),
+            eventClassNames: arg => [`status-${arg.event.extendedProps.status || 'pending'}`],
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            },
+            eventDidMount: info => {
+                const status = info.event.extendedProps.status;
+                const colorMap = {
+                    confirmed: ['#2ecc71', '#27ae60'],
+                    cancelled: ['#e74c3c', '#c0392b'],
+                    completed: ['#8e44ad', '#7d3c98'],
+                    pending: ['#f39c12', '#e67e22']
+                };
+                const [bg, border] = colorMap[status] || ['#bdc3c7', '#95a5a6'];
+                info.el.style.backgroundColor = bg;
+                info.el.style.borderColor = border;
+                info.el.style.color = 'white';
+                info.el.style.fontWeight = 'bold';
+            },
+            dayMaxEvents: true,
+            selectable: true,
+            selectMirror: true
+        });
 
-        // Initialize FullCalendar after DOM is ready
-        document.addEventListener('DOMContentLoaded', function () {
-            const calendarEl = document.getElementById('calendar');
+        calendar.render();
+        loadTodaysAppointments();
 
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                height: 'auto',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                events: events,
-                eventClick: function (info) {
-                    openAppointmentModal(info.event);
-                },
-                eventClassNames: function (arg) {
-                    let classes = [];
-                    const status = arg.event.extendedProps.status;
-                    if (status === 'confirmed') classes.push('status-confirmed');
-                    else if (status === 'cancelled') classes.push('status-cancelled');
-                    else if (status === 'completed') classes.push('status-completed');
-                    else classes.push('status-pending');
-                    return classes;
-                },
-                eventTimeFormat: {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                },
-                eventDidMount: function (info) {
-                    const status = info.event.extendedProps.status;
-                    if (status === 'confirmed') {
-                        info.el.style.backgroundColor = '#2ecc71';
-                        info.el.style.borderColor = '#27ae60';
-                    } else if (status === 'cancelled') {
-                        info.el.style.backgroundColor = '#e74c3c';
-                        info.el.style.borderColor = '#c0392b';
-                    } else if (status === 'completed') {
-                        info.el.style.backgroundColor = '#8e44ad';
-                        info.el.style.borderColor = '#7d3c98';
-                    } else {
-                        info.el.style.backgroundColor = '#f39c12';
-                        info.el.style.borderColor = '#e67e22';
-                    }
-                    info.el.style.color = 'white';
-                    info.el.style.fontWeight = 'bold';
-                },
-                dayMaxEvents: true,
-                selectable: true,
-                selectMirror: true
-            });
-
-            calendar.render();
-            loadTodaysAppointments();
-
-            // Modal close handler
-            document.querySelector('.appointment-modal-close').addEventListener('click', () => {
+        // Modal & button handlers
+        const modalClose = document.querySelector('.appointment-modal-close');
+        if (modalClose) {
+            modalClose.addEventListener('click', () => {
                 document.getElementById('appointmentModal').style.display = 'none';
             });
+        }
 
-            window.addEventListener('click', (e) => {
-                const modal = document.getElementById('appointmentModal');
-                if (e.target === modal) modal.style.display = 'none';
-            });
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('appointmentModal');
+            if (e.target === modal) modal.style.display = 'none';
+        });
 
-            // Save notes
-            document.getElementById('btn-save-notes').addEventListener('click', () => {
-                const id = document.getElementById('btn-save-notes').dataset.appointmentId;
-                const notes = document.getElementById('modal-notes').value;
+        
 
-                fetch('/doctor/appointments/save-notes', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ appointmentId: id, notes })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Notes saved successfully.', 'success');
-                    } else {
-                        showNotification('Failed to save notes.', 'error');
-                    }
-                    document.getElementById('appointmentModal').style.display = 'none';
-                    loadTodaysAppointments();
+        const btnCancel = document.getElementById('btn-cancel-appointment');
+        if (btnCancel) {
+            btnCancel.addEventListener('click', () => {
+                const id = btnCancel.dataset.appointmentId;
+                showConfirmationModal("Are you sure you want to cancel this appointment?", () => {
+                    fetch('/doctor/appointments/cancel', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ appointmentId: id })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        showNotification(data.success ? 'Appointment cancelled.' : 'Cancel failed.', data.success ? 'success' : 'error');
+                        document.getElementById('appointmentModal').style.display = 'none';
+                        loadTodaysAppointments();
+                    });
                 });
             });
+        }
 
-            // Cancel appointment
-            document.getElementById('btn-cancel-appointment').addEventListener('click', () => {
-    const id = document.getElementById('btn-cancel-appointment').dataset.appointmentId;
+        const btnComplete = document.getElementById('btn-complete-appointment');
+        if (btnComplete) {
+            btnComplete.addEventListener('click', () => {
+                const id = btnComplete.dataset.appointmentId;
+                showConfirmationModal("Mark this appointment as completed?", () => {
+                    fetch('/doctor/appointments/complete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ appointmentId: id })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        showNotification(data.success ? 'Appointment marked as completed.' : 'Could not complete appointment.', data.success ? 'success' : 'error');
+                        document.getElementById('appointmentModal').style.display = 'none';
+                        loadTodaysAppointments();
+                    });
+                });
+            });
+        }
+        const btnConfirm = document.getElementById('btn-confirm-appointment');
+if (btnConfirm) {
+    btnConfirm.addEventListener('click', () => {
+        const id = btnConfirm.dataset.appointmentId;
 
-    showConfirmationModal("Are you sure you want to cancel this appointment?", () => {
-        fetch('/doctor/appointments/cancel', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ appointmentId: id })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('Appointment cancelled.', 'success');
-            } else {
-                showNotification('Cancel failed.', 'error');
-            }
-            document.getElementById('appointmentModal').style.display = 'none';
-            loadTodaysAppointments();
+        showConfirmationModal("Are you sure you want to confirm this appointment?", () => {
+            fetch('/doctor/appointments/confirm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ appointmentId: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                showNotification(data.success ? 'Appointment confirmed.' : 'Could not confirm appointment.', data.success ? 'success' : 'error');
+                document.getElementById('appointmentModal').style.display = 'none';
+                loadTodaysAppointments();
+            });
         });
     });
-});
+}
 
 
-            // Complete appointment
-            document.getElementById('btn-complete-appointment').addEventListener('click', () => {
-    const id = document.getElementById('btn-complete-appointment').dataset.appointmentId;
+        document.getElementById('confirmActionBtn').addEventListener('click', () => {
+            if (typeof confirmAction === 'function') confirmAction();
+            document.getElementById('confirmationModal').style.display = 'none';
+        });
 
-    showConfirmationModal("Mark this appointment as completed?", () => {
-        fetch('/doctor/appointments/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ appointmentId: id })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('Appointment marked as completed.', 'success');
-            } else {
-                showNotification('Could not complete appointment.', 'error');
-            }
-            document.getElementById('appointmentModal').style.display = 'none';
-            loadTodaysAppointments();
+        document.getElementById('cancelActionBtn').addEventListener('click', () => {
+            document.getElementById('confirmationModal').style.display = 'none';
+        });
+
+        document.getElementById('closeConfirmModal').addEventListener('click', () => {
+            document.getElementById('confirmationModal').style.display = 'none';
         });
     });
-});
+</script>
 
-
-        });
-    </script>
     <!-- Confirmation Modal -->
 <div id="confirmationModal" class="appointment-modal" style="display: none;">
     <div class="appointment-modal-content">
