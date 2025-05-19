@@ -408,6 +408,25 @@ const upcomingAppointments = appointments.filter(appointment => {
         </div>
     </div>
     <script src="script/Script.js"></script>
+    <script>
+    <% if (typeof cancelledAppointmentId !== 'undefined') { %>
+        // Show toast to patient
+        const notification = document.createElement('div');
+        notification.className = 'notification notification-info';
+        notification.innerHTML = `
+            <div class="notification-icon"><i class="fas fa-info-circle"></i></div>
+            <div class="notification-content">Your appointment has been cancelled by the doctor.</div>
+        `;
+        document.querySelector('.toast-container').appendChild(notification);
+
+        // Auto-hide
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 500);
+        }, 4000);
+    <% } %>
+</script>
+
 </body>
 
 </html>

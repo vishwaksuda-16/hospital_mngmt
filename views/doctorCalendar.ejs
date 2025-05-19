@@ -47,6 +47,7 @@
             --dark: #2c3e50;
             --sidebar-width: 240px;
             --sidebar-collapsed-width: 70px;
+            --completed: #8e44ad; /* New completed color */
         }
 
         * {
@@ -361,6 +362,10 @@
             background-color: var(--danger);
         }
 
+        .status-completed {
+            background-color: var(--completed);
+        }
+
         /* Table styling */
         .table {
             width: 100%;
@@ -487,6 +492,15 @@
         .btn-danger {
             background-color: var(--danger);
             color: white;
+        }
+
+        .btn-completed {
+            background-color: var(--completed);
+            color: white;
+        }
+
+        .btn-completed:hover {
+            background-color: #7d3c98;
         }
 
         /* Appointment modal */
@@ -716,6 +730,10 @@
                                 <span class="status-indicator status-cancelled"></span>
                                 Cancelled
                             </div>
+                            <div class="legend-item">
+                                <span class="status-indicator status-completed"></span>
+                                Completed
+                            </div>
                         </div>
 
                         <!-- Calendar Container -->
@@ -783,6 +801,9 @@
                         <button class="btn btn-danger" id="btn-cancel-appointment">
                             <i class="fas fa-times-circle"></i> Cancel Appointment
                         </button>
+                        <button class="btn btn-completed" id="btn-complete-appointment">
+                            <i class="fas fa-check-circle"></i> Mark as Completed
+                        </button>
                         <button class="btn btn-success" id="btn-save-notes">
                             <i class="fas fa-save"></i> Save Notes
                         </button>
@@ -791,6 +812,7 @@
             </div>
         </div>
     </div>
+    
 
     <!-- Load FullCalendar -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
@@ -806,6 +828,7 @@
                 let statusClass = 'pending';
                 if (app.status === 'confirmed') statusClass = 'confirmed';
                 if (app.status === 'cancelled') statusClass = 'cancelled';
+                if (app.status === 'completed') statusClass = 'completed';
                 
                 events.push({
                     id: app.id,
@@ -896,15 +919,25 @@
                 appointmentDetails.status.charAt(0).toUpperCase() + appointmentDetails.status.slice(1) || 'Pending';
             document.getElementById('modal-notes').value = appointmentDetails.doctorNotes || '';
 
-            // Set appointment ID as data attribute for the save buttons
+            // Set appointment ID as data attribute for the buttons
             document.getElementById('btn-save-notes').setAttribute('data-appointment-id', appointmentDetails._id);
             document.getElementById('btn-cancel-appointment').setAttribute('data-appointment-id', appointmentDetails._id);
+            document.getElementById('btn-complete-appointment').setAttribute('data-appointment-id', appointmentDetails._id);
 
-            // Show or hide cancel button based on appointment status
-            if (appointmentDetails.status === 'cancelled') {
-                document.getElementById('btn-cancel-appointment').style.display = 'none';
+            // Show or hide buttons based on appointment status
+            const cancelBtn = document.getElementById('btn-cancel-appointment');
+            const completeBtn = document.getElementById('btn-complete-appointment');
+            
+            if (appointmentDetails.status === 'cancelled' || appointmentDetails.status === 'completed') {
+                cancelBtn.style.display = 'none';
             } else {
-                document.getElementById('btn-cancel-appointment').style.display = 'inline-block';
+                cancelBtn.style.display = 'inline-block';
+            }
+            
+            if (appointmentDetails.status === 'completed' || appointmentDetails.status === 'cancelled') {
+                completeBtn.style.display = 'none';
+            } else {
+                completeBtn.style.display = 'inline-block';
             }
 
             // Show modal
@@ -949,24 +982,25 @@
                 let statusClass = 'status-pending';
                 if (appointment.status === 'confirmed') statusClass = 'status-confirmed';
                 if (appointment.status === 'cancelled') statusClass = 'status-cancelled';
+                if (appointment.status === 'completed') statusClass = 'status-completed';
 
-                html += `<tr>
-                    <td>${timeDisplay}</td>
-                    <td>${appointment.patientName}</td>
-                    <td>${appointment.purpose}</td>
-                    <td><span class="status-indicator ${statusClass}"></span> ${appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick='openAppointmentModal(${JSON.stringify(appointment)})'>
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </td>
-                </tr>`;
+                html += `<tr><tr>
+    <td>${timeDisplay}</td>
+    <td>${appointment.patientName}</td>
+    <td>${appointment.purpose}</td>
+    <td><span class="status-indicator ${statusClass}"></span> ${appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}</td>
+    <td>
+        <button class="btn btn-sm btn-primary" onclick='openAppointmentModal(${JSON.stringify(appointment)})'>
+            <i class="fas fa-eye"></i> View
+        </button>
+    </td>
+</tr>`;
             });
 
             html += '</tbody></table>';
             todayAppointmentsContainer.innerHTML = html;
 
-            // Set today's date
+            // Set today's date in header
             document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', {
                 weekday: 'long',
                 year: 'numeric',
@@ -974,273 +1008,187 @@
                 day: 'numeric'
             });
         }
+        let confirmAction = null;
 
-        // Updated calendar initialization code
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("DOM fully loaded");
-    
-    // Get dynamic appointment data from server
-    const rawAppointments = <%- JSON.stringify(appointmentsByDate) %>;
-    console.log("Raw appointments data:", rawAppointments);
-    
-    const events = [];
-    
-    // Convert raw appointments to FullCalendar events format
-    for (const date in rawAppointments) {
-        rawAppointments[date].forEach(app => {
-            let statusClass = 'pending';
-            if (app.status === 'confirmed') statusClass = 'confirmed';
-            if (app.status === 'cancelled') statusClass = 'cancelled';
-            
-            events.push({
-                id: app.id,
-                title: app.patientName + ' - ' + app.purpose,
-                start: `${date}T${app.time}`,
-                className: `status-${statusClass}`,
-                extendedProps: {
-                    _id: app.id,
-                    patientName: app.patientName,
-                    patientId: app.patientId,
-                    patientAge: app.patientAge,
-                    purpose: app.purpose,
-                    status: app.status,
-                    time: app.time,
-                    date: date,
-                    doctorNotes: app.notes || ""
-                }
-            });
-        });
-    }
-    
-    console.log("Events prepared for calendar:", events.length, events);
-    
-    // Add test event if no events available
-    if (events.length === 0) {
-        console.log("No appointments found, adding test event");
-        // Add a test event
-        const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
-        events.push({
-            id: 'test-event',
-            title: 'Test Patient - Check-up',
-            start: `${todayStr}T10:00:00`,
-            className: 'status-confirmed',
-            extendedProps: {
-                _id: 'test-event',
-                patientName: 'Test Patient',
-                patientId: 'test-123',
-                patientAge: 30,
-                purpose: 'Check-up',
-                status: 'confirmed',
-                time: '10:00',
-                date: todayStr,
-                doctorNotes: "Test notes"
-            }
-        });
-    }
+function showConfirmationModal(message, onConfirm) {
+    document.getElementById('confirmModalMessage').textContent = message;
+    document.getElementById('confirmationModal').style.display = 'block';
+    confirmAction = onConfirm;
+}
 
-    try {
-        console.log("Calendar initialization starting...");
-        const calendarEl = document.getElementById('calendar');
-        
-        if (!calendarEl) {
-            console.error("Calendar element not found in DOM!");
-            return;
-        }
-        
-        // Apply inline styles to ensure visibility
-        calendarEl.style.height = '650px';
-        calendarEl.style.border = '1px solid #ddd';
-        calendarEl.style.position = 'relative';
-        calendarEl.style.zIndex = '1';
-        calendarEl.style.backgroundColor = '#fff';
-        
-        // Initialize FullCalendar
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            height: 'auto', // Let it adapt to container
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            events: events,
-            eventClick: function(info) {
-                console.log("Event clicked:", info.event);
-                openAppointmentModal(info.event);
-            },
-            eventClassNames: function(arg) {
-                // Add appropriate styling based on the appointment status
-                let classes = [];
-                if (arg.event.extendedProps.status === 'confirmed') {
-                    classes.push('status-confirmed');
-                } else if (arg.event.extendedProps.status === 'cancelled') {
-                    classes.push('status-cancelled');
-                } else {
-                    classes.push('status-pending');
-                }
-                return classes;
-            },
-            eventTimeFormat: {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-            },
-            // Add explicit color-coding for better visibility
-            eventDidMount: function(info) {
-                // Add background color based on status
-                if (info.event.extendedProps.status === 'confirmed') {
-                    info.el.style.backgroundColor = '#2ecc71';
-                    info.el.style.borderColor = '#27ae60';
-                } else if (info.event.extendedProps.status === 'cancelled') {
-                    info.el.style.backgroundColor = '#e74c3c';
-                    info.el.style.borderColor = '#c0392b';
-                } else {
-                    info.el.style.backgroundColor = '#f39c12';
-                    info.el.style.borderColor = '#e67e22';
-                }
-                // Ensure text is readable
-                info.el.style.color = 'white';
-                info.el.style.fontWeight = 'bold';
-            },
-            // Add more interactive options
-            dayMaxEvents: true, // Allow "more" link when too many events
-            selectable: true,
-            selectMirror: true
-        });
-        
-        // Attempt to render the calendar
-        try {
-            calendar.render();
-            console.log("Calendar rendered successfully");
-        } catch (renderError) {
-            console.error("Error rendering calendar:", renderError);
-        }
-        
-        // Load today's appointments
-        loadTodaysAppointments();
-        
-        // Setup UI event handlers
-        setupEventHandlers(calendar);
-        
-    } catch (error) {
-        console.error("Error in calendar setup:", error);
-        // Show error in the calendar container for debugging
-        const calendarEl = document.getElementById('calendar');
-        if (calendarEl) {
-            calendarEl.innerHTML = `<div style="padding: 20px; color: red;">
-                <h3>Error Loading Calendar</h3>
-                <p>${error.message}</p>
-                <p>Please check the console for more details.</p>
-            </div>`;
-        }
+document.getElementById('confirmActionBtn').addEventListener('click', () => {
+    if (typeof confirmAction === 'function') {
+        confirmAction();
     }
+    document.getElementById('confirmationModal').style.display = 'none';
 });
 
-// Function to setup all event handlers for the modal
-function setupEventHandlers(calendar) {
-    // Close modal when clicking on the close button or outside the modal
-    document.querySelector('.appointment-modal-close').addEventListener('click', function() {
-        document.getElementById('appointmentModal').style.display = 'none';
-    });
-    
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('appointmentModal');
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-    
-    // Handle appointment actions
-    document.getElementById('btn-save-notes').addEventListener('click', function() {
-        const appointmentId = this.getAttribute('data-appointment-id');
-        const notes = document.getElementById('modal-notes').value;
-        
-        // Send request to save notes
-        fetch('/doctor/appointments/save-notes', {
+document.getElementById('cancelActionBtn').addEventListener('click', () => {
+    document.getElementById('confirmationModal').style.display = 'none';
+});
+
+document.getElementById('closeConfirmModal').addEventListener('click', () => {
+    document.getElementById('confirmationModal').style.display = 'none';
+});
+
+        // Initialize FullCalendar after DOM is ready
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                height: 'auto',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: events,
+                eventClick: function (info) {
+                    openAppointmentModal(info.event);
+                },
+                eventClassNames: function (arg) {
+                    let classes = [];
+                    const status = arg.event.extendedProps.status;
+                    if (status === 'confirmed') classes.push('status-confirmed');
+                    else if (status === 'cancelled') classes.push('status-cancelled');
+                    else if (status === 'completed') classes.push('status-completed');
+                    else classes.push('status-pending');
+                    return classes;
+                },
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                },
+                eventDidMount: function (info) {
+                    const status = info.event.extendedProps.status;
+                    if (status === 'confirmed') {
+                        info.el.style.backgroundColor = '#2ecc71';
+                        info.el.style.borderColor = '#27ae60';
+                    } else if (status === 'cancelled') {
+                        info.el.style.backgroundColor = '#e74c3c';
+                        info.el.style.borderColor = '#c0392b';
+                    } else if (status === 'completed') {
+                        info.el.style.backgroundColor = '#8e44ad';
+                        info.el.style.borderColor = '#7d3c98';
+                    } else {
+                        info.el.style.backgroundColor = '#f39c12';
+                        info.el.style.borderColor = '#e67e22';
+                    }
+                    info.el.style.color = 'white';
+                    info.el.style.fontWeight = 'bold';
+                },
+                dayMaxEvents: true,
+                selectable: true,
+                selectMirror: true
+            });
+
+            calendar.render();
+            loadTodaysAppointments();
+
+            // Modal close handler
+            document.querySelector('.appointment-modal-close').addEventListener('click', () => {
+                document.getElementById('appointmentModal').style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+                const modal = document.getElementById('appointmentModal');
+                if (e.target === modal) modal.style.display = 'none';
+            });
+
+            // Save notes
+            document.getElementById('btn-save-notes').addEventListener('click', () => {
+                const id = document.getElementById('btn-save-notes').dataset.appointmentId;
+                const notes = document.getElementById('modal-notes').value;
+
+                fetch('/doctor/appointments/save-notes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ appointmentId: id, notes })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Notes saved successfully.', 'success');
+                    } else {
+                        showNotification('Failed to save notes.', 'error');
+                    }
+                    document.getElementById('appointmentModal').style.display = 'none';
+                    loadTodaysAppointments();
+                });
+            });
+
+            // Cancel appointment
+            document.getElementById('btn-cancel-appointment').addEventListener('click', () => {
+    const id = document.getElementById('btn-cancel-appointment').dataset.appointmentId;
+
+    showConfirmationModal("Are you sure you want to cancel this appointment?", () => {
+        fetch('/doctor/appointments/cancel', {
             method: 'POST',
-             credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                appointmentId: appointmentId,
-                notes: notes
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ appointmentId: id })
         })
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
             if (data.success) {
-                showNotification('Notes saved successfully', 'success');
-                
-                // Update the event data
-                const event = calendar.getEventById(appointmentId);
-                if (event) {
-                    event.setExtendedProp('doctorNotes', notes);
-                }
+                showNotification('Appointment cancelled.', 'success');
             } else {
-                showNotification('Failed to save notes', 'error');
+                showNotification('Cancel failed.', 'error');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('An error occurred while saving notes', 'error');
-        });
-        
-        // Close the modal
-        document.getElementById('appointmentModal').style.display = 'none';
-    });
-    
-    document.getElementById('btn-cancel-appointment').addEventListener('click', function() {
-        const appointmentId = this.getAttribute('data-appointment-id');
-        
-        if (confirm('Are you sure you want to cancel this appointment?')) {
-            // Send request to cancel appointment
-            fetch('/doctor/appointments/cancel', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    appointmentId: appointmentId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Appointment cancelled successfully', 'success');
-                    
-                    // Update the event in the calendar
-                    const eventToUpdate = calendar.getEventById(appointmentId);
-                    if (eventToUpdate) {
-                        eventToUpdate.setProp('className', 'status-cancelled');
-                        eventToUpdate.setExtendedProp('status', 'cancelled');
-                        // Update color
-                        const el = eventToUpdate.el;
-                        if (el) {
-                            el.style.backgroundColor = '#e74c3c';
-                            el.style.borderColor = '#c0392b';
-                        }
-                    }
-                    
-                    // Reload today's appointments to reflect changes
-                    loadTodaysAppointments();
-                } else {
-                    showNotification('Failed to cancel appointment', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('An error occurred while cancelling the appointment', 'error');
-            });
-            
-            // Close the modal
             document.getElementById('appointmentModal').style.display = 'none';
-        }
+            loadTodaysAppointments();
+        });
     });
-}
-    </script>
-</body>
+});
 
+
+            // Complete appointment
+            document.getElementById('btn-complete-appointment').addEventListener('click', () => {
+    const id = document.getElementById('btn-complete-appointment').dataset.appointmentId;
+
+    showConfirmationModal("Mark this appointment as completed?", () => {
+        fetch('/doctor/appointments/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ appointmentId: id })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Appointment marked as completed.', 'success');
+            } else {
+                showNotification('Could not complete appointment.', 'error');
+            }
+            document.getElementById('appointmentModal').style.display = 'none';
+            loadTodaysAppointments();
+        });
+    });
+});
+
+
+        });
+    </script>
+    <!-- Confirmation Modal -->
+<div id="confirmationModal" class="appointment-modal" style="display: none;">
+    <div class="appointment-modal-content">
+        <div class="appointment-modal-header">
+            <h3 id="confirmModalTitle">Confirm Action</h3>
+            <span id="closeConfirmModal" class="appointment-modal-close">&times;</span>
+        </div>
+        <div class="appointment-modal-body">
+            <p id="confirmModalMessage">Are you sure?</p>
+            <div class="appointment-actions">
+                <button class="btn btn-danger" id="confirmActionBtn">
+                    <i class="fas fa-check-circle"></i> Yes
+                </button>
+                <button class="btn btn-secondary" id="cancelActionBtn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
 </html>

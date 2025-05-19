@@ -83,6 +83,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Update the appointments POST route to include SMS notifications
 app.post('/appointments', async (req, res) => {
+    req.session.cancelledAppointmentId = null;
     const userId = req.session.userId;
 
     if (!userId) {
@@ -93,36 +94,22 @@ app.post('/appointments', async (req, res) => {
         let appointment;
 
         if (req.body.appointmentId) {
-            // Update existing appointment
             const { appointmentId, date, time } = req.body;
-
-            // Ensure date is in YYYY-MM-DD format
             const formattedDate = new Date(date).toISOString().split('T')[0];
-
-            await Appointment.findByIdAndUpdate(appointmentId, {
-                date: formattedDate,
-                time
-            });
-
+            await Appointment.findByIdAndUpdate(appointmentId, { date: formattedDate, time });
             appointment = await Appointment.findById(appointmentId);
-            console.log(`Updated appointment ${appointmentId} with date ${formattedDate}`);
 
-            // Cancel any existing reminder job
             if (reminderJobs.has(appointmentId)) {
                 reminderJobs.get(appointmentId).cancel();
                 reminderJobs.delete(appointmentId);
             }
         } else {
-            // Create new appointment
-            console.log('New appointment data:', req.body);
             const { doctor, specialization, date, time, status } = req.body;
-
-            // Ensure date is in YYYY-MM-DD format
             const formattedDate = new Date(date).toISOString().split('T')[0];
 
             appointment = new Appointment({
                 userID: userId,
-                doctor,  // This should match exactly with the doctor's name
+                doctor,
                 specialization,
                 date: formattedDate,
                 time,
@@ -130,13 +117,11 @@ app.post('/appointments', async (req, res) => {
             });
 
             await appointment.save();
-            console.log(`Created new appointment ${appointment._id} with date ${formattedDate}`);
         }
 
         const patient = await Patient.findOne({ userID: userId });
 
         if (patient && patient.contactDetails && patient.contactDetails.phone) {
-            // Send confirmation SMS
             try {
                 await twilioUtils.sendAppointmentConfirmation(
                     patient.contactDetails.phone,
@@ -145,11 +130,7 @@ app.post('/appointments', async (req, res) => {
                     appointment.date,
                     appointment.time
                 );
-                console.log(`Confirmation SMS sent to ${patient.contactDetails.phone}`);
-                console.log('appointment.date:', appointment.date);
-                console.log('appointment.time:', appointment.time);
 
-                // Schedule appointment reminder (1 hour before)
                 const job = twilioUtils.scheduleAppointmentReminder(
                     patient.contactDetails.phone,
                     appointment.doctor,
@@ -160,28 +141,29 @@ app.post('/appointments', async (req, res) => {
 
                 if (job) {
                     reminderJobs.set(appointment._id.toString(), job);
-                    console.log(`Scheduled reminder for appointment ${appointment._id}`);
-                    // Redirect with success parameters
+
+                    req.session.cancelledAppointmentId = null; // ✅ Clear it here
                     return res.redirect('/appointments?sms=sent&reminder=scheduled');
                 } else {
-                    console.log('Could not schedule reminder job');
+                    req.session.cancelledAppointmentId = null;
                     return res.redirect('/appointments?sms=sent&reminder=failed');
                 }
             } catch (smsError) {
                 console.error('Error sending SMS:', smsError);
-                // Continue even if SMS fails, but redirect with error parameter
+                req.session.cancelledAppointmentId = null;
                 return res.redirect('/appointments');
             }
         } else {
-            console.log('Patient phone not found, SMS not sent');
-            // Redirect without SMS notification
+            req.session.cancelledAppointmentId = null;
             return res.redirect('/appointments');
         }
+
     } catch (error) {
         console.error('Error processing appointment:', error);
         res.status(500).send('Failed to process appointment');
     }
 });
+
 
 // Update the delete appointment route to cancel scheduled reminders
 app.delete('/appointments/:id', async (req, res) => {
@@ -242,18 +224,23 @@ app.get('/appointments', async (req, res) => {
         }
 
         // Then find appointments using userID (not patient or user)
-        const appointments = await Appointment.find({ userID: userId });
+        const appointments = await Appointment.find({ userID: userId, status: { $nin: ['Cancelled', 'Completed'] } });
         const doctors = await Doctor.find(); // Fetch all doctors
 
         // Extract unique specialities
         const specialities = [...new Set(doctors.map(doc => doc.specialization))];
 
+        const cancelledAppointmentId = req.session.cancelledAppointmentId || null;
+        req.session.cancelledAppointmentId = null;
+
         res.render('Appointments', {
             user: patient,
             doctors,
             specialities,
-            appointments
+            appointments,
+            cancelledAppointmentId
         });
+
     } catch (err) {
         console.error('Error fetching appointments:', err);
         res.status(500).send('Internal Server Error');
@@ -417,9 +404,14 @@ app.get('/dashboard', async (req, res) => {
         return res.send('Patient not found');
     }
 
-    const appointments = await Appointment.find({ userID: userId });
+    const appointments = await Appointment.find({ userID: userId, status: { $nin: ['Cancelled', 'Completed'] } });
 
-    res.render('Dashboard', { user: patient, appointments: appointments });
+    res.render('Dashboard', {
+        user: patient,
+        appointments,
+        cancelledAppointmentId: req.session.cancelledAppointmentId || null
+    });
+    req.session.cancelledAppointmentId = null;
 });
 
 app.post('/dashboard', async (req, res) => {
@@ -1006,6 +998,9 @@ app.post('/doctor/appointments/cancel', async (req, res) => {
         // Update the appointment status to cancelled
         appointment.status = 'Cancelled';
         await appointment.save();
+        // Set session flag for patient
+        req.session.cancelledAppointmentId = appointment._id;
+
 
         return res.json({ success: true, message: 'Appointment cancelled successfully' });
     } catch (error) {
@@ -1048,6 +1043,36 @@ app.post('/logout', (req, res) => {
         res.redirect('/login'); // or /home or any landing page
     });
 });
+app.post('/doctor/appointments/complete', async (req, res) => {
+    try {
+        const { appointmentId } = req.body;
+
+        if (!appointmentId) {
+            return res.status(400).json({ success: false, message: 'Appointment ID is required' });
+        }
+
+        const result = await Appointment.findByIdAndUpdate(
+            appointmentId,
+            { status: 'Completed' },
+            { new: true }
+        );
+
+        if (!result) {
+            return res.status(404).json({ success: false, message: 'Appointment not found' });
+        }
+
+        return res.json({
+            success: true,
+            message: 'Appointment marked as completed successfully',
+            appointment: result
+        });
+
+    } catch (error) {
+        console.error('Error completing appointment:', error);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 
 
 app.listen(5085, () => {

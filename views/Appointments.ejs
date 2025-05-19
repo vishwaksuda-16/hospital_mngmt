@@ -248,6 +248,25 @@
     </script>
     <script src="/script/Script.js"></script>
     <script src="/script/smsNotification.js"></script>
+    <script>
+    <% if (cancelledAppointmentId) { %>
+<script>
+  const notification = document.createElement('div');
+  notification.className = 'notification notification-info';
+  notification.innerHTML = `
+    <div class="notification-icon"><i class="fas fa-info-circle"></i></div>
+    <div class="notification-content">Your appointment has been cancelled by the doctor.</div>
+  `;
+  document.querySelector('.toast-container').appendChild(notification);
+  setTimeout(() => {
+    notification.classList.add('fade-out');
+    setTimeout(() => notification.remove(), 500);
+  }, 4000);
+</script>
+<% } %>
+
+</script>
+
 </body>
 
 </html>
