@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -179,8 +180,8 @@
         }
 
         .star-rating label:hover,
-        .star-rating label:hover ~ label,
-        .star-rating input:checked ~ label {
+        .star-rating label:hover~label,
+        .star-rating input:checked~label {
             color: #ffcc00;
         }
 
@@ -346,16 +347,16 @@
                 flex-direction: column;
                 padding: 20px;
             }
-            
+
             nav ul {
                 margin-top: 20px;
             }
-            
+
             nav ul li {
                 margin-left: 15px;
                 margin-right: 15px;
             }
-            
+
             .page-title {
                 font-size: 28px;
             }
@@ -366,17 +367,18 @@
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            
+
             .submit-btn {
                 width: 100%;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="background-container"></div>
     <div class="background-overlay"></div>
-    
+
     <div class="content-container">
         <header>
             <div class="logo">
@@ -395,111 +397,115 @@
 
         <main>
             <h1 class="page-title">Patient Feedback</h1>
-                
 
-<div class="testimonials-container">
-    <h2 class="testimonials-title">What Our Patients Say</h2>
-    <div class="testimonials-list">
-        <% if (feedbacks && feedbacks.length > 0) { %>
-            <% feedbacks.forEach(function(feedback) { %>
-                <!-- Modified section in feedback.ejs to display full name and remove date -->
-<div class="testimonial-card">
-    <div class="testimonial-header">
-        <span class="testimonial-author">
-            <%= feedback.userID.UserName ? feedback.userID.UserName : 'Anonymous' %>
-        </span>
-    </div>
-    <div class="testimonial-rating">
-        <% for(let i = 0; i < 5; i++) { %>
-            <% if (i < feedback.rating) { %>
-                ★
-            <% } else { %>
-                ☆
-            <% } %>
-        <% } %>
-    </div>
-    <p class="testimonial-content"><%= feedback.feedback %></p>
-</div>
-            <% }); %>
-        <% } else { %>
-            <div class="testimonial-card">
-                <p class="testimonial-content">No feedbacks yet. Be the first to share your experience!</p>
-            </div>
-        <% } %>
-    </div>
-</div>
-            </div>
-        </main>
 
-        <footer>
-            <div class="footer-content">
-                <div class="footer-section footer-section1">
-                    <h4>Contact Information</h4>
-                    <p>Email: info@hmshospital.com</p>
-                    <p>Phone: (555) 123-4567</p>
-                    <p>Address: 123 Medical Center Blvd, Healthville, MED 12345</p>
-                </div>
-                
-                <div class="footer-section footer-section2">
-                    <h4>Quick Links</h4>
-                    <p><a href="/privacy-policy" style="color: #f0f0f0; text-decoration: none;">Privacy Policy</a></p>
-                    <p><a href="/terms" style="color: #f0f0f0; text-decoration: none;">Terms of Service</a></p>
-                    <p><a href="/careers" style="color: #f0f0f0; text-decoration: none;">Careers</a></p>
+            <div class="testimonials-container">
+                <h2 class="testimonials-title">What Our Patients Say</h2>
+                <div class="testimonials-list">
+                    <% if (feedbacks && feedbacks.length> 0) { %>
+                        <% feedbacks.forEach(function(feedback) { %>
+                            <!-- Modified section in feedback.ejs to display full name and remove date -->
+                            <div class="testimonial-card">
+                                <div class="testimonial-header">
+                                    <span class="testimonial-author">
+                                        <%= feedback.userID.UserName ? feedback.userID.UserName : 'Anonymous' %>
+                                    </span>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <% for(let i=0; i < 5; i++) { %>
+                                        <% if (i < feedback.rating) { %>
+                                            ★
+                                            <% } else { %>
+                                                ☆
+                                                <% } %>
+                                                    <% } %>
+                                </div>
+                                <p class="testimonial-content">
+                                    <%= feedback.feedback %>
+                                </p>
+                            </div>
+                            <% }); %>
+                                <% } else { %>
+                                    <div class="testimonial-card">
+                                        <p class="testimonial-content">No feedbacks yet. Be the first to share your
+                                            experience!</p>
+                                    </div>
+                                    <% } %>
                 </div>
             </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2025 Hospital Management System. All rights reserved.</p>
+    </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section footer-section1">
+                <h4>Contact Information</h4>
+                <p>Email: info@hmshospital.com</p>
+                <p>Phone: (555) 123-4567</p>
+                <p>Address: 123 Medical Center Blvd, Healthville, MED 12345</p>
             </div>
-        </footer>
+
+            <div class="footer-section footer-section2">
+                <h4>Quick Links</h4>
+                <p><a href="/privacy-policy" style="color: #f0f0f0; text-decoration: none;">Privacy Policy</a></p>
+                <p><a href="/terms" style="color: #f0f0f0; text-decoration: none;">Terms of Service</a></p>
+                <p><a href="/careers" style="color: #f0f0f0; text-decoration: none;">Careers</a></p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Hospital Management System. All rights reserved.</p>
+        </div>
+    </footer>
     </div>
 
     <script>
         // Form validation
-        document.getElementById('feedbackForm').addEventListener('submit', function(event) {
+        document.getElementById('feedbackForm').addEventListener('submit', function (event) {
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const feedback = document.getElementById('feedback').value;
             const rating = document.querySelector('input[name="rating"]:checked');
-            
+
             let isValid = true;
-            
+
             if (!name || name.trim() === '') {
                 alert('Please enter your name');
                 isValid = false;
             }
-            
+
             if (!email || email.trim() === '') {
                 alert('Please enter your email');
                 isValid = false;
             }
-            
+
             if (!feedback || feedback.trim() === '') {
                 alert('Please provide your feedback');
                 isValid = false;
             }
-            
+
             if (!rating) {
                 alert('Please provide a rating');
                 isValid = false;
             }
-            
+
             if (!isValid) {
                 event.preventDefault();
             }
         });
-        
+
         // Pagination functionality
         const paginationBtns = document.querySelectorAll('.pagination-btn');
         paginationBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 paginationBtns.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                
+
                 // Here you would typically load the relevant testimonials
                 // For a static page, this is just for demonstration
             });
         });
     </script>
 </body>
+
 </html>

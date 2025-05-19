@@ -909,8 +909,6 @@ app.get('/doctor/calendar', async (req, res) => {
             return res.redirect('/login');
         }
 
-        console.log('Doctor Name for calendar:', doctor.name);
-
         // Get all appointments for this doctor
         const appointments = await Appointment.find({
             doctor: doctor.name
@@ -924,18 +922,35 @@ app.get('/doctor/calendar', async (req, res) => {
             try {
                 const patient = await Patient.findOne({ userID: appointment.userID });
                 if (patient) {
+                    // Format the date correctly: Convert from "YYYY-MM-DD" to YYYY-MM-DD
+                    // (strip any potential quotes from the date string)
+                    const formattedDate = appointment.date.replace(/"/g, '');
+
+                    // Format the time correctly: Ensure it's in HH:MM:SS format
+                    let formattedTime = appointment.time;
+                    if (!formattedTime.includes(':')) {
+                        // Add seconds if missing
+                        formattedTime = formattedTime + ":00";
+                    }
+                    // Ensure we have the right format HH:MM:SS
+                    if (formattedTime.split(':').length === 2) {
+                        formattedTime = formattedTime + ":00";
+                    }
+
+                    // Calculate patient age
+                    const age = calculateAge(patient.dob);
+
                     processedAppointments.push({
                         id: appointment._id,
-                        date: appointment.date,
-                        time: appointment.time,
+                        date: formattedDate,
+                        time: formattedTime,
                         patientName: patient.name,
                         patientId: patient._id,
-                        patientAge: calculateAge(patient.dob),
+                        patientAge: age,
                         purpose: appointment.specialization,
-                        status: appointment.status
+                        status: appointment.status.toLowerCase(), // Normalize status to lowercase
+                        notes: appointment.notes || ""
                     });
-                } else {
-                    console.log(`No patient found for userID: ${appointment.userID}`);
                 }
             } catch (err) {
                 console.error(`Error processing appointment ${appointment._id} for calendar:`, err);
@@ -959,6 +974,79 @@ app.get('/doctor/calendar', async (req, res) => {
         console.error('Error loading doctor appointments:', error);
         res.status(500).send('Internal Server Error');
     }
+});
+
+// Helper function to calculate age from DOB
+function calculateAge(dob) {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+
+    return age;
+}
+app.post('/doctor/appointments/cancel', async (req, res) => {
+    try {
+        const { appointmentId } = req.body;
+
+        if (!appointmentId) {
+            return res.status(400).json({ success: false, message: 'Appointment ID is required' });
+        }
+
+        const appointment = await Appointment.findById(appointmentId);
+
+        if (!appointment) {
+            return res.status(404).json({ success: false, message: 'Appointment not found' });
+        }
+
+        // Update the appointment status to cancelled
+        appointment.status = 'Cancelled';
+        await appointment.save();
+
+        return res.json({ success: true, message: 'Appointment cancelled successfully' });
+    } catch (error) {
+        console.error('Error cancelling appointment:', error);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
+app.post('/doctor/appointments/save-notes', async (req, res) => {
+    try {
+        const { appointmentId, notes } = req.body;
+
+        if (!appointmentId) {
+            return res.status(400).json({ success: false, message: 'Appointment ID is required' });
+        }
+
+        const appointment = await Appointment.findById(appointmentId);
+
+        if (!appointment) {
+            return res.status(404).json({ success: false, message: 'Appointment not found' });
+        }
+
+        // Update the appointment notes
+        appointment.notes = notes;
+        await appointment.save();
+
+        return res.json({ success: true, message: 'Notes saved successfully' });
+    } catch (error) {
+        console.error('Error saving appointment notes:', error);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
+app.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Logout error:', err);
+            return res.status(500).send('Logout failed');
+        }
+        res.redirect('/login'); // or /home or any landing page
+    });
 });
 
 
