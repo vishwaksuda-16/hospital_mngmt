@@ -7,6 +7,433 @@
     <title>HMS Patient Portal - Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="/styles/Styles.css">
+    <style>
+        /* Enhanced styling to match doctor dashboard */
+        .content-grid {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Enhanced card styling */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            border-top: 4px solid #3498db;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Different border colors for different cards */
+        .card.appointments-card {
+            border-top-color: #3498db;
+        }
+
+        .card.health-insights-card {
+            border-top-color: #9b59b6;
+        }
+
+        .card.wellness-tracker-card {
+            border-top-color: #2ecc71;
+        }
+
+        .card.health-education-card {
+            border-top-color: #e74c3c;
+        }
+
+        /* Improved card header with gradient background */
+        .card-header {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        /* Enhanced appointment card styling */
+        .appointment-card {
+            padding: 16px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            transition: transform 0.2s ease;
+        }
+
+        .appointment-card:hover {
+            transform: translateX(5px);
+            background-color: #edf2f7;
+        }
+
+        /* Health insights styling */
+        .insight-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #9b59b6;
+            transition: transform 0.2s ease;
+        }
+
+        .insight-item:hover {
+            transform: translateX(5px);
+            background-color: #edf2f7;
+        }
+
+        .insight-icon {
+            background-color: #9b59b6;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .insight-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .insight-content p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Health education styling */
+        .education-item {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #e74c3c;
+            transition: all 0.3s ease;
+        }
+
+        .education-item:hover {
+            transform: translateX(5px);
+            background-color: #edf2f7;
+        }
+
+        .education-item h3 {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .education-item p {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .education-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+
+        /* Wellness tracker styling */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .metric-item {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-item:hover {
+            background-color: #edf2f7;
+            transform: translateY(-3px);
+        }
+
+        .metric-icon {
+            font-size: 1.5rem;
+            color: #2ecc71;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .metric-trend {
+            font-size: 0.75rem;
+            margin-top: 5px;
+        }
+
+        .trend-up {
+            color: #e74c3c;
+        }
+
+        .trend-down {
+            color: #2ecc71;
+        }
+
+        .trend-stable {
+            color: #f39c12;
+        }
+
+        /* Progress tracker styling */
+        .progress-bar {
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #2ecc71;
+            border-radius: 5px;
+        }
+
+        /* Quick actions styling */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background-color: #f8f9fa;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        .action-btn:hover {
+            background-color: #3498db;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .action-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: #3498db;
+        }
+
+        .action-btn:hover .action-icon {
+            color: white;
+        }
+
+        .action-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Timeline styling */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 15px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 9px;
+            height: 100%;
+            width: 2px;
+            background-color: #3498db;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7rem;
+        }
+
+        .timeline-content {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-left: 10px;
+        }
+
+        .timeline-time {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .timeline-title {
+            margin: 5px 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .timeline-desc {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Card footer styling */
+        .card-footer {
+            background-color: #f8f9fa;
+            padding: 12px 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            text-align: right;
+        }
+
+        .card-footer a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .card-footer a:hover {
+            color: #2980b9;
+        }
+
+        /* Modal styling improvement */
+        #deleteModal, #rescheduleModal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #efefef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close {
+            font-size: 1.5rem;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Button styling */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+    </style>
 </head>
 
 <body>
@@ -32,8 +459,7 @@
             <ul class="nav-links">
                 <li><a href="/dashboard" class="active"><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
                 <li><a href="/appointments"><i class="fas fa-calendar-check"></i> <span>Appointments</span></a></li>
-                <li><a href="/medical_records"><i class="fas fa-file-medical"></i> <span>Medical Records</span></a>
-                </li>
+                <li><a href="/medical_records"><i class="fas fa-file-medical"></i> <span>Medical Records</span></a></li>
                 <li><a href="/patient/billing"><i class="fas fa-file-invoice-dollar"></i> <span>Billing</span></a></li>
                 <li><a href="/patient-feedback"><i class="fas fa-procedures"></i> <span>Feedback</span></a></li>
                 <li><a href="/profile"><i class="fas fa-user"></i> <span>Profile</span></a></li>
@@ -66,46 +492,46 @@
             <!-- Dashboard Content -->
             <div class="page-content active">
                 <div class="content-grid">
-<!-- Upcoming Appointments -->
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title">Upcoming Appointments</h2>
-        <div class="card-icon" style="background-color: #3498db;">
-            <i class="fas fa-calendar-check"></i>
-        </div>
-    </div>
-    <div class="card-content">
-        <% 
-        // Filter appointments that are within the next 3 days
-const today = new Date();
-today.setHours(0, 0, 0, 0); // Set to beginning of day for proper comparison
-
-const threeDaysLater = new Date(today);
-threeDaysLater.setDate(today.getDate() + 3);
-threeDaysLater.setHours(23, 59, 59, 999); // Set to end of day for proper comparison
-
-const upcomingAppointments = appointments.filter(appointment => {
-    const appointmentDate = new Date(appointment.date);
-    appointmentDate.setHours(0, 0, 0, 0); // Set to beginning of day for proper comparison
-    
-    // Check if the appointment date is today or in the future, and within 3 days
-    return appointmentDate >= today && appointmentDate <= threeDaysLater;
-});
-        
-        if (upcomingAppointments.length > 0) { 
-        %>
-            <% upcomingAppointments.forEach(appointment => { %>
-                <div class="appointment-card">
-                    <div class="appointment-info">
-                        <div class="appointment-doctor"><%= appointment.doctor %></div>
-                        <div class="appointment-spec"><%= appointment.specialization %></div>
-                        <div class="appointment-time">
-                            <span><i class="fas fa-calendar"></i> <%= new Date(appointment.date).toDateString() %></span>
-                            <span><i class="fas fa-clock"></i> <%= appointment.time %></span>
+                    <!-- Upcoming Appointments -->
+                    <div class="card appointments-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Upcoming Appointments</h2>
+                            <div class="card-icon" style="background-color: #3498db;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
                         </div>
-                    </div>
-                    <div class="appointment-actions">
-                        <button class="btn btn-sm btn-primary reschedule-btn"
+                        <div class="card-content">
+                            <% 
+                            // Filter appointments that are within the next 3 days
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0); // Set to beginning of day for proper comparison
+
+                            const threeDaysLater = new Date(today);
+                            threeDaysLater.setDate(today.getDate() + 3);
+                            threeDaysLater.setHours(23, 59, 59, 999); // Set to end of day for proper comparison
+
+                            const upcomingAppointments = appointments.filter(appointment => {
+                                const appointmentDate = new Date(appointment.date);
+                                appointmentDate.setHours(0, 0, 0, 0); // Set to beginning of day for proper comparison
+                                
+                                // Check if the appointment date is today or in the future, and within 3 days
+                                return appointmentDate >= today && appointmentDate <= threeDaysLater;
+                            });
+                            
+                            if (upcomingAppointments.length > 0) { 
+                            %>
+                                <% upcomingAppointments.forEach(appointment => { %>
+                                    <div class="appointment-card">
+                                        <div class="appointment-info">
+                                            <div class="appointment-doctor"><%= appointment.doctor %></div>
+                                            <div class="appointment-spec"><%= appointment.specialization %></div>
+                                            <div class="appointment-time">
+                                                <span><i class="fas fa-calendar"></i> <%= new Date(appointment.date).toDateString() %></span>
+                                                <span><i class="fas fa-clock"></i> <%= appointment.time %></span>
+                                            </div>
+                                        </div>
+                                        <div class="appointment-actions">
+                                            <button class="btn btn-sm btn-primary reschedule-btn"
                                                 data-id="<%= appointment._id %>"
                                                 data-doctor="<%= appointment.doctor %>"
                                                 data-specialization="<%= appointment.specialization %>"
@@ -113,257 +539,202 @@ const upcomingAppointments = appointments.filter(appointment => {
                                                 data-time="<%= appointment.time %>">
                                                 <i class="fas fa-calendar-alt"></i> Reschedule
                                             </button>
-                        <div>
-                                                    
-                                                    <button class="btn-danger" data-id="<%= appointment._id %>">Cancel</button>
-                                                    
-                                                    <div id="deleteModal" class="modal-overlay">
-                                                        <div class="modal-box">
-                                                            <p>Are you sure you want to delete this appointment?</p>
-                                                            <div class="modal-buttons">
-                                                                <button id="confirmDeleteBtn" class="btn btn-danger" data-id="<%= appointment._id %>">Yes, Delete</button>
-                                                                <button id="cancelDeleteBtn" class="btn btn-secondary">Cancel</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                </div>     
+                                            <button class="btn btn-sm btn-danger cancel-btn" data-id="<%= appointment._id %>">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <div class="no-appointments">
+                                    <p>No appointments scheduled in the next 3 days.</p>
+                                    <div style="margin-top: 20px;">
+                                        <a href="/appointments" class="btn btn-primary"><i class="fas fa-plus"></i> Book Appointment</a>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/appointments">View All Appointments <i class="fas fa-arrow-right"></i></a>
+                        </div>
                     </div>
-                </div>
-                <div class="card-footer">
-        <a href="/appointments">View All Appointments <i class="fas fa-arrow-right"></i></a>
-    </div>
-            <% }) %>
-        <% } else { %>
-            <div class="no-appointments">
-                <p>No appointments scheduled in the next 3 days.</p>
-                <div style="margin-top: 20px;">
-                    <a href="/appointments" class="btn btn-primary"><i class="fas fa-plus"></i> Book Appointment</a>
-                </div>
-            </div>
-        <% } %>
-    </div>
-</div>
-                    
 
-                    <!-- Recent Medical Records -->
-                    <div class="card">
+                    <!-- Health Insights -->
+                    <div class="card health-insights-card">
                         <div class="card-header">
-                            <h2 class="card-title">Recent Medical Records</h2>
+                            <h2 class="card-title">Health Insights</h2>
                             <div class="card-icon" style="background-color: #9b59b6;">
-                                <i class="fas fa-file-medical"></i>
+                                <i class="fas fa-chart-line"></i>
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="record-item">
-                                <div class="record-icon">
+                            <div class="insight-item">
+                                <div class="insight-icon">
                                     <i class="fas fa-heartbeat"></i>
                                 </div>
-                                <div class="record-info">
-                                    <div class="record-title">Cardiac Evaluation</div>
-                                    <div class="record-date">March 28, 2025</div>
+                                <div class="insight-content">
+                                    <h3>Blood Pressure Trend</h3>
+                                    <p>Your blood pressure has been stable at 120/80 mmHg for the last three readings.</p>
                                 </div>
-                                <button class="record-action" title="View"><i class="fas fa-eye"></i></button>
                             </div>
-                            <div class="record-item">
-                                <div class="record-icon">
-                                    <i class="fas fa-vial"></i>
+                            <div class="insight-item">
+                                <div class="insight-icon">
+                                    <i class="fas fa-weight"></i>
                                 </div>
-                                <div class="record-info">
-                                    <div class="record-title">Blood Test Results</div>
-                                    <div class="record-date">March 15, 2025</div>
+                                <div class="insight-content">
+                                    <h3>Weight Management</h3>
+                                    <p>You've maintained your weight within the 175-178 lbs range in the past 3 months.</p>
                                 </div>
-                                <button class="record-action" title="View"><i class="fas fa-eye"></i></button>
+                            </div>
+                            <div class="insight-item">
+                                <div class="insight-icon">
+                                    <i class="fas fa-procedures"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h3>Medication Adherence</h3>
+                                    <p>Your medication tracking shows 95% adherence for hypertension medication.</p>
+                                </div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <a href="medical-records.html">View All Records <i class="fas fa-arrow-right"></i></a>
+                            <a href="/health-tracker">View Health Trends <i class="fas fa-arrow-right"></i></a>
                         </div>
                     </div>
 
-                    <!-- Recent Treatments -->
-                    <div class="card">
+                    <!-- Wellness Tracker -->
+                    <div class="card wellness-tracker-card">
                         <div class="card-header">
-                            <h2 class="card-title">Current Treatments</h2>
+                            <h2 class="card-title">Wellness Tracker</h2>
                             <div class="card-icon" style="background-color: #2ecc71;">
-                                <i class="fas fa-procedures"></i>
+                                <i class="fas fa-heart"></i>
                             </div>
                         </div>
                         <div class="card-content">
-                            <div class="treatment-item">
-                                <div class="treatment-icon">
-                                    <i class="fas fa-capsules"></i>
+                            <div class="metric-grid">
+                                <div class="metric-item">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-walking"></i>
+                                    </div>
+                                    <div class="metric-value">6,752</div>
+                                    <div class="metric-label">Steps Today</div>
+                                    <div class="metric-trend trend-up">
+                                        <i class="fas fa-arrow-up"></i> 12% from yesterday
+                                    </div>
                                 </div>
-                                <div class="treatment-info">
-                                    <div class="treatment-title">Hypertension Management</div>
-                                    <div class="treatment-date">Started: Feb 15, 2025 - Ongoing</div>
-                                    <div class="treatment-doctor">Dr. Sarah Johnson</div>
+                                <div class="metric-item">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-bed"></i>
+                                    </div>
+                                    <div class="metric-value">7.3 hrs</div>
+                                    <div class="metric-label">Sleep Last Night</div>
+                                    <div class="metric-trend trend-stable">
+                                        <i class="fas fa-equals"></i> Similar to average
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="treatment-item">
-                                <div class="treatment-icon">
-                                    <i class="fas fa-hand-holding-medical"></i>
+                                <div class="metric-item">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-apple-alt"></i>
+                                    </div>
+                                    <div class="metric-value">1,980</div>
+                                    <div class="metric-label">Calories Today</div>
+                                    <div class="metric-trend trend-down">
+                                        <i class="fas fa-arrow-down"></i> 8% from target
+                                    </div>
                                 </div>
-                                <div class="treatment-info">
-                                    <div class="treatment-title">Physical Therapy</div>
-                                    <div class="treatment-date">Started: Mar 5, 2025 - Ends: May 5, 2025</div>
-                                    <div class="treatment-doctor">Dr. Robert Williams</div>
+                                <div class="metric-item">
+                                    <div class="metric-icon">
+                                        <i class="fas fa-tint"></i>
+                                    </div>
+                                    <div class="metric-value">4/8</div>
+                                    <div class="metric-label">Water Intake</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 50%"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <a href="medical-records.html">View All Treatments <i class="fas fa-arrow-right"></i></a>
+                            <a href="/wellness-tracker">Track My Health <i class="fas fa-arrow-right"></i></a>
                         </div>
                     </div>
 
-                    <!-- Recent Billing -->
-                    <div class="card">
+                    <!-- Health Education -->
+                    <div class="card health-education-card">
                         <div class="card-header">
-                            <h2 class="card-title">Recent Billing</h2>
+                            <h2 class="card-title">Health Education</h2>
                             <div class="card-icon" style="background-color: #e74c3c;">
-                                <i class="fas fa-file-invoice-dollar"></i>
+                                <i class="fas fa-book-medical"></i>
                             </div>
                         </div>
-                        <div class="card-content">
-                            <div class="billing-item">
-                                <div class="billing-info">
-                                    <div class="billing-title">Consultation Fee</div>
-                                    <div class="billing-date">March 28, 2025</div>
-                                </div>
-                                <div>
-                                    <span class="billing-amount">$150.00</span>
-                                    <span class="billing-status status-paid">Paid</span>
-                                </div>
-                            </div>
-                            <div class="billing-item">
-                                <div class="billing-info">
-                                    <div class="billing-title">Lab Tests</div>
-                                    <div class="billing-date">March 15, 2025</div>
-                                </div>
-                                <div>
-                                    <span class="billing-amount">$75.00</span>
-                                    <span class="billing-status status-pending">Pending</span>
-                                </div>
-                            </div>
+                        <div class="card-content" id="health-education">
+                            <!-- Health education content will be dynamically inserted here -->
                         </div>
                         <div class="card-footer">
-                            <a href="billing.html">View All Billing <i class="fas fa-arrow-right"></i></a>
+                            <a href="/health-education">Explore More Topics <i class="fas fa-arrow-right"></i></a>
                         </div>
                     </div>
                 </div>
 
-                <!-- Health Summary -->
+                <!-- Treatment Timeline -->
                 <div class="full-width-content">
                     <div class="card">
                         <div class="card-header">
-                            <h2 class="card-title">Health Summary</h2>
+                            <h2 class="card-title">My Care Timeline</h2>
                         </div>
-                        <div class="tab-navigation">
-                            <button class="tab-btn active" onclick="switchTab(' vitals-tab', this)">Vitals</button>
-                            <button class="tab-btn" onclick="switchTab('medications-tab', this)">Medications</button>
-                            <button class="tab-btn" onclick="switchTab('allergies-tab', this)">Allergies</button>
-                            <button class="tab-btn" onclick="switchTab('conditions-tab', this)">Conditions</button>
-                </div>
-                <div class="tab-content active" id="vitals-tab">
-                    <div class="content-grid">
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Blood Pressure</h2>
+                        <div class="card-content">
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-marker">
+                                        <i class="fas fa-syringe"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-time">May 12, 2025</div>
+                                        <div class="timeline-title">Flu Vaccination</div>
+                                        <div class="timeline-desc">Annual influenza vaccination administered by Dr. Michael Chen.</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker">
+                                        <i class="fas fa-flask"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-time">May 1, 2025</div>
+                                        <div class="timeline-title">Blood Work Results</div>
+                                        <div class="timeline-desc">Comprehensive blood panel showed normal values. Cholesterol slightly elevated.</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker">
+                                        <i class="fas fa-stethoscope"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-time">April 15, 2025</div>
+                                        <div class="timeline-title">Annual Physical Exam</div>
+                                        <div class="timeline-desc">Routine checkup with Dr. Sarah Johnson. Blood pressure 120/80 mmHg.</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker">
+                                        <i class="fas fa-capsules"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-time">March 5, 2025</div>
+                                        <div class="timeline-title">Medication Adjustment</div>
+                                        <div class="timeline-desc">Lisinopril dosage adjusted from 5mg to 10mg daily.</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-content">
-                                <p>Latest: 120/80 mmHg (Normal)</p>
-                                <p>Date: April 1, 2025</p>
-                            </div>
                         </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Heart Rate</h2>
-                            </div>
-                            <div class="card-content">
-                                <p>Latest: 72 BPM (Normal)</p>
-                                <p>Date: April 1, 2025</p>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Weight</h2>
-                            </div>
-                            <div class="card-content">
-                                <p>Latest: 175 lbs</p>
-                                <p>Date: April 1, 2025</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="medications-tab">
-                    <div class="treatment-item">
-                        <div class="treatment-icon">
-                            <i class="fas fa-pills"></i>
-                        </div>
-                        <div class="treatment-info">
-                            <div class="treatment-title">Lisinopril 10mg</div>
-                            <div class="treatment-date">Take once daily</div>
-                            <div class="treatment-doctor">Prescribed by: Dr. Sarah Johnson</div>
-                        </div>
-                    </div>
-                    <div class="treatment-item">
-                        <div class="treatment-icon">
-                            <i class="fas fa-pills"></i>
-                        </div>
-                        <div class="treatment-info">
-                            <div class="treatment-title">Atorvastatin 20mg</div>
-                            <div class="treatment-date">Take once daily at bedtime</div>
-                            <div class="treatment-doctor">Prescribed by: Dr. Sarah Johnson</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="allergies-tab">
-                    <div class="treatment-item">
-                        <div class="treatment-icon" style="background-color: #e74c3c;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="treatment-info">
-                            <div class="treatment-title">Penicillin</div>
-                            <div class="treatment-date">Severe - Anaphylaxis</div>
-                        </div>
-                    </div>
-                    <div class="treatment-item">
-                        <div class="treatment-icon" style="background-color: #f39c12;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="treatment-info">
-                            <div class="treatment-title">Shellfish</div>
-                            <div class="treatment-date">Moderate - Hives</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="conditions-tab">
-                    <div class="treatment-item">
-                        <div class="treatment-icon" style="background-color: #3498db;">
-                            <i class="fas fa-heartbeat"></i>
-                        </div>
-                        <div class="treatment-info">
-                            <div class="treatment-title">Hypertension</div>
-                            <div class="treatment-date">Diagnosed: January 2023</div>
-                            <div class="treatment-doctor">Managed by: Dr. Sarah Johnson</div>
-                        </div>
-                    </div>
-                    <div class="treatment-item">
-                        <div class="treatment-icon" style="background-color: #3498db;">
-                            <i class="fas fa-lungs"></i>
-                        </div>
-                        <div class="treatment-info">
-                            <div class="treatment-title">Mild Asthma</div>
-                            <div class="treatment-date">Diagnosed: March 2020</div>
-                            <div class="treatment-doctor">Managed by: Dr. Michael Chen</div>
+                        <div class="card-footer">
+                            <a href="/medical_records">View Complete Medical History <i class="fas fa-arrow-right"></i></a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
-    </div>
+
+    <!-- Reschedule Modal -->
     <div id="rescheduleModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -393,10 +764,10 @@ const upcomingAppointments = appointments.filter(appointment => {
                             <option value="10:00 am">10:00 AM</option>
                             <option value="11:00 am">11:00 AM</option>
                             <option value="12:00 pm">12:00 PM</option>
-                            <option value="13:00 pm">13:00 PM</option>
-                            <option value="14:00 pm">14:00 PM</option>
-                            <option value="15:00 pm">15:00 PM</option>
-                            <option value="16:00 pm">16:00 PM</option>
+                            <option value="13:00 pm">1:00 PM</option>
+                            <option value="14:00 pm">2:00 PM</option>
+                            <option value="15:00 pm">3:00 PM</option>
+                            <option value="16:00 pm">4:00 PM</option>
                         </select>
                     </div>
                     <div class="form-actions modal-actions">
@@ -407,26 +778,183 @@ const upcomingAppointments = appointments.filter(appointment => {
             </div>
         </div>
     </div>
-    <script src="script/Script.js"></script>
-    <script>
-    <% if (typeof cancelledAppointmentId !== 'undefined') { %>
-        // Show toast to patient
-        const notification = document.createElement('div');
-        notification.className = 'notification notification-info';
-        notification.innerHTML = `
-            <div class="notification-icon"><i class="fas fa-info-circle"></i></div>
-            <div class="notification-content">Your appointment has been cancelled by the doctor.</div>
+
+    <!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Cancel Appointment</h3>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+            <form id="deleteForm" action="/appointments/delete" method="post">
+                <input type="hidden" id="deleteAppointmentId" name="appointmentId">
+                <div class="form-actions modal-actions">
+                    <button type="button" class="btn btn-secondary" id="closeDeleteModal">No, Keep it</button>
+                    <button type="submit" class="btn btn-danger">Yes, Cancel Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script>
+    // Sidebar toggle functionality
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+    }
+
+    // Health Education Content - Dynamically loaded
+    const healthEducationTopics = [
+        {
+            title: "Managing Hypertension at Home",
+            content: "Learn about dietary changes, exercise routines, and monitoring practices that can help control high blood pressure.",
+            date: "May 18, 2025",
+            category: "Cardiovascular Health"
+        },
+        {
+            title: "Understanding Your Medication",
+            content: "Important information about common medications, side effects, and how to optimize your treatment plan.",
+            date: "May 15, 2025",
+            category: "Medication Management"
+        },
+        {
+            title: "Stress Management Techniques",
+            content: "Discover effective methods to reduce stress and improve your overall health and well-being.",
+            date: "May 10, 2025",
+            category: "Mental Health"
+        }
+    ];
+
+    // Populate health education section
+    const healthEducationContainer = document.getElementById('health-education');
+    healthEducationTopics.forEach(topic => {
+        const educationItem = document.createElement('div');
+        educationItem.className = 'education-item';
+        educationItem.innerHTML = `
+            <h3>${topic.title}</h3>
+            <p>${topic.content}</p>
+            <div class="education-footer">
+                <span>${topic.date}</span>
+                <span>${topic.category}</span>
+            </div>
         `;
-        document.querySelector('.toast-container').appendChild(notification);
+        healthEducationContainer.appendChild(educationItem);
+    });
 
-        // Auto-hide
-        setTimeout(() => {
-            notification.classList.add('fade-out');
-            setTimeout(() => notification.remove(), 500);
-        }, 4000);
-    <% } %>
+    // Modal functionality
+    const rescheduleModal = document.getElementById('rescheduleModal');
+    const deleteModal = document.getElementById('deleteModal');
+    const closeBtns = document.getElementsByClassName('close');
+
+    // Reschedule button click event
+    const rescheduleBtns = document.querySelectorAll('.reschedule-btn');
+    rescheduleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const doctor = this.getAttribute('data-doctor');
+            const specialization = this.getAttribute('data-specialization');
+            const date = this.getAttribute('data-date');
+            const time = this.getAttribute('data-time');
+            
+            document.getElementById('appointmentId').value = id;
+            document.getElementById('rescheduleDoctor').value = doctor;
+            document.getElementById('reschedulespecialization').value = specialization;
+            
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('rescheduleDate').min = today;
+            
+            // Format the date for the input
+            const appointmentDate = new Date(date).toISOString().split('T')[0];
+            document.getElementById('rescheduleDate').value = appointmentDate;
+            
+            rescheduleModal.style.display = 'flex';
+        });
+    });
+
+    // Cancel button click event
+    const cancelBtns = document.querySelectorAll('.cancel-btn');
+    cancelBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            document.getElementById('deleteAppointmentId').value = id;
+            deleteModal.style.display = 'flex';
+        });
+    });
+
+    // Close modal functionality
+    Array.from(closeBtns).forEach(btn => {
+        btn.addEventListener('click', function() {
+            rescheduleModal.style.display = 'none';
+            deleteModal.style.display = 'none';
+        });
+    });
+
+    document.getElementById('closeModal').addEventListener('click', function() {
+        rescheduleModal.style.display = 'none';
+    });
+
+    document.getElementById('closeDeleteModal').addEventListener('click', function() {
+        deleteModal.style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === rescheduleModal) {
+            rescheduleModal.style.display = 'none';
+        }
+        if (event.target === deleteModal) {
+            deleteModal.style.display = 'none';
+        }
+    });
+
+    // Chat with doctor functionality
+    document.getElementById('chat-with-doctor').addEventListener('click', function() {
+        // Redirect to messaging page or open chat interface
+        alert('Chat functionality coming soon! Please check back later.');
+    });
+
+    // Form validation for reschedule form
+    document.getElementById('rescheduleForm').addEventListener('submit', function(event) {
+        const dateInput = document.getElementById('rescheduleDate');
+        const timeInput = document.getElementById('rescheduleTime');
+        
+        if (!dateInput.value || !timeInput.value) {
+            event.preventDefault();
+            alert('Please select both date and time for your rescheduled appointment.');
+            return false;
+        }
+        
+        // Validate that the date is not in the past
+        const selectedDate = new Date(dateInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+            event.preventDefault();
+            alert('Please select a future date for your appointment.');
+            return false;
+        }
+        
+        // Additional validation could be added here if needed
+        return true;
+    });
+
+    // Initialize date restrictions when the page loads
+    window.addEventListener('DOMContentLoaded', function() {
+        // Set minimum date to today for the reschedule date picker
+        const today = new Date().toISOString().split('T')[0];
+        const datePicker = document.getElementById('rescheduleDate');
+        if (datePicker) {
+            datePicker.min = today;
+        }
+    });
 </script>
-
 </body>
-
 </html>
