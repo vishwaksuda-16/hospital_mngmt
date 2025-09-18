@@ -193,6 +193,11 @@ app.delete('/appointments/:id', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
+app.get('/', (req, res) => {
+    res.render('home');
+});
+
 app.get('/home', (req, res) => {
     res.render('home');
 });
